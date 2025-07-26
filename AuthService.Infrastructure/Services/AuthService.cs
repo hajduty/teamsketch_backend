@@ -1,7 +1,8 @@
 ﻿using AuthService.Core.Interfaces;
 
 namespace AuthService.Infrastructure.Services;
-internal class AuthService : IAuthService
+
+public class AuthService : IAuthService
 {
     public Task<string> LoginAsync(string username, string password)
     {
