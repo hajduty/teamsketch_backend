@@ -1,0 +1,58 @@
+﻿using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+using UserService.Core.DTOs;
+using UserService.Core.Entities;
+using UserService.Core.Interfaces;
+using UserService.Infrastructure.Data;
+using Microsoft.AspNetCore.Identity;
+
+namespace UserService.Infrastructure.Repositories;
+
+public class UserRepository : IUserRepository
+{
+    private readonly AppDbContext _context;
+    public UserRepository(AppDbContext context)
+    {
+        _context = context;
+    }
+
+    public async Task<User> CreateUser(string email, string password)
+    {
+        var newUser = new User
+        {
+            Email = email,
+            PasswordHash = password
+        };
+        var hasher = new PasswordHasher<User>();
+        newUser.PasswordHash = hasher.HashPassword(newUser, newUser.PasswordHash);
+        await _context.Users.AddAsync(newUser);
+        return newUser;
+    }
+
+    public Task<User> UpdateUser(int userId, string email, string password)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<User> DeleteUser(int userId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<User?> GetUserById(int userId) => await _context.Users.FindAsync(userId);
+
+    public async Task<List<User>> GetAllUsers()
+    {
+        return await _context.Users.ToListAsync();
+    }
+
+    public async Task<User?> GetUserByEmail(string email)
+    {
+        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+    }
+
+    public bool UserExists(string email)
+    {
+        return _context.Users.Any(u => u.Email == email);
+    }
+}
