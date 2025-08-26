@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.71.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Generates both server + client code from user.proto -->
+    <Protobuf Include="Protos\user_service.proto" GrpcServices="Both" />
+  </ItemGroup>
+
+</Project>

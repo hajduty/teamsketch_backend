@@ -9,6 +9,23 @@ namespace UserService.Infrastructure.Services;
 
 public class UserService(IUserRepository userRepository) : IUserService
 {
+    public async Task<UserResponse> RegisterUser(CreateUserRequest request)
+    {
+        var existingUser = await userRepository.GetUserByEmail(request.Email);
+        if (existingUser != null)
+        {
+            throw new AuthenticationException("Email already registered.");
+        }
+
+        var user = await userRepository.CreateUser(request.Email, request.Password);
+
+        return new UserResponse
+        {
+            Id = user.Id,
+            Email = user.Email,
+        };
+    }
+
     public async Task<UserResponse> LoginUser(string email, string password)
     {
         var user = await userRepository.GetUserByEmail(email);
@@ -18,31 +35,13 @@ public class UserService(IUserRepository userRepository) : IUserService
         }
 
         var hasher = new PasswordHasher<User>();
+
         var result = hasher.VerifyHashedPassword(user, user.PasswordHash, password);
+
         if (result != PasswordVerificationResult.Success)
         {
             throw new AuthenticationException("Invalid email or password.");
         }
-
-        return new UserResponse
-        {
-            Id = user.Id,
-            Email = user.Email,
-        };
-    }
-
-    public async Task<UserResponse> RegisterUser(CreateUserRequest request)
-    {
-        var existingUser = await userRepository.GetUserByEmail(request.Email);
-        if (existingUser != null)
-        {
-            throw new AuthenticationException("Email already registered.");
-        }
-
-        var hasher = new PasswordHasher<User>();
-        var passwordHash = hasher.HashPassword(null, request.Password);
-
-        var user = await userRepository.CreateUser(request.Email, passwordHash);
 
         return new UserResponse
         {

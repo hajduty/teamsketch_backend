@@ -25,13 +25,32 @@ public class UserRepository : IUserRepository
         };
         var hasher = new PasswordHasher<User>();
         newUser.PasswordHash = hasher.HashPassword(newUser, newUser.PasswordHash);
+
         await _context.Users.AddAsync(newUser);
+
+        await _context.SaveChangesAsync();
+
         return newUser;
     }
 
-    public Task<User> UpdateUser(int userId, string email, string password)
+    public async Task<User?> UpdateUser(int userId, string email, string newPassword)
     {
-        throw new NotImplementedException();
+        var user = await _context.Users.FindAsync(userId);
+
+        if (user == null)
+            return null;
+
+        if (!string.IsNullOrWhiteSpace(email))
+            user.Email = email;
+
+        if (!string.IsNullOrWhiteSpace(newPassword))
+        {
+            var hasher = new PasswordHasher<User>();
+            user.PasswordHash = hasher.HashPassword(user, newPassword);
+        }
+
+        await _context.SaveChangesAsync();
+        return user;
     }
 
     public Task<User> DeleteUser(int userId)

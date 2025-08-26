@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option csharp_namespace = "UserService.Grpc";
+
+package user;
+
+service User {
+  rpc Login (LoginRequest) returns (UserResponse);
+  rpc Register (RegisterRequest) returns (UserResponse);
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message UserResponse {
+  int32 id = 1;
+  string email = 2;
+}
