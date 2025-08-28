@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
 namespace AuthService.Core.DTOs;
-public class LoginRequest
+public class AuthRequest
 {
     [Required]
     [EmailAddress]

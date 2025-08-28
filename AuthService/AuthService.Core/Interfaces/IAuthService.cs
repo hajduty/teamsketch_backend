@@ -1,8 +1,10 @@
-﻿namespace AuthService.Core.Interfaces;
+﻿using AuthService.Core.DTOs;
+
+namespace AuthService.Core.Interfaces;
 
 public interface IAuthService
 {
-    Task<string> LoginAsync(string username, string password);
-    Task<string> RegisterAsync(string username, string password);
-    Task<string> RefreshTokenAsync(string token);
+    Task<AuthResult> LoginAsync(AuthRequest request);
+    Task<AuthResult> RegisterAsync(AuthRequest request);
+    Task<AuthResult> RefreshTokenAsync(string token);
 }

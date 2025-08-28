@@ -8,14 +8,8 @@ using Microsoft.AspNetCore.Identity;
 
 namespace UserService.Infrastructure.Repositories;
 
-public class UserRepository : IUserRepository
+public class UserRepository(AppDbContext context) : IUserRepository
 {
-    private readonly AppDbContext _context;
-    public UserRepository(AppDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<User> CreateUser(string email, string password)
     {
         var newUser = new User
@@ -26,16 +20,16 @@ public class UserRepository : IUserRepository
         var hasher = new PasswordHasher<User>();
         newUser.PasswordHash = hasher.HashPassword(newUser, newUser.PasswordHash);
 
-        await _context.Users.AddAsync(newUser);
+        await context.Users.AddAsync(newUser);
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
 
         return newUser;
     }
 
     public async Task<User?> UpdateUser(int userId, string email, string newPassword)
     {
-        var user = await _context.Users.FindAsync(userId);
+        var user = await context.Users.FindAsync(userId);
 
         if (user == null)
             return null;
@@ -49,7 +43,7 @@ public class UserRepository : IUserRepository
             user.PasswordHash = hasher.HashPassword(user, newPassword);
         }
 
-        await _context.SaveChangesAsync();
+        await context.SaveChangesAsync();
         return user;
     }
 
@@ -58,20 +52,20 @@ public class UserRepository : IUserRepository
         throw new NotImplementedException();
     }
 
-    public async Task<User?> GetUserById(int userId) => await _context.Users.FindAsync(userId);
+    public async Task<User?> GetUserById(int userId) => await context.Users.FindAsync(userId);
 
     public async Task<List<User>> GetAllUsers()
     {
-        return await _context.Users.ToListAsync();
+        return await context.Users.ToListAsync();
     }
 
     public async Task<User?> GetUserByEmail(string email)
     {
-        return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+        return await context.Users.FirstOrDefaultAsync(u => u.Email == email);
     }
 
     public bool UserExists(string email)
     {
-        return _context.Users.Any(u => u.Email == email);
+        return context.Users.Any(u => u.Email == email);
     }
 }

@@ -8,8 +8,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
-        services.AddScoped<IAuthService, Services.AuthService>();
         services.AddSingleton<ITokenService, Services.TokenService>();
+        services.AddGrpcClient<UserService.Grpc.User.UserClient>(o =>
+        {
+            o.Address = new Uri("https://localhost:7288");
+        });
+        services.AddScoped<IAuthService, Services.AuthService>();
 
         return services;
     }
