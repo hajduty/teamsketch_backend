@@ -1,14 +1,27 @@
 ﻿using AuthService.Core.Interfaces;
+using AuthService.Infrastructure.Helpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace AuthService.Infrastructure.Services;
 
-public class TokenService(IConfiguration configuration) : ITokenService
+public class TokenService : ITokenService
 {
+    private readonly RSA _privateRsa;
+    private readonly RsaSecurityKey _publicKey;
+    private readonly IConfiguration _configuration;
+
+    public TokenService(IConfiguration configuration)
+    {
+        _privateRsa = RsaKeyHelper.LoadOrCreate(configuration);
+        _publicKey = new RsaSecurityKey(_privateRsa.ExportParameters(false));
+        _configuration = configuration;
+    }
+
     public string GenerateRefreshToken(int userId, string email)
     {
         throw new NotImplementedException();
@@ -22,12 +35,11 @@ public class TokenService(IConfiguration configuration) : ITokenService
             new Claim(JwtRegisteredClaimNames.Email, email)
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var creds = new SigningCredentials(new RsaSecurityKey(_privateRsa) { KeyId = "auth-key-1"}, SecurityAlgorithms.RsaSha256);
 
         var token = new JwtSecurityToken(
-            issuer: configuration["Jwt:Issuer"],
-            audience: configuration["Jwt:Audience"],
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
             claims: claims,
             expires: DateTime.UtcNow.AddDays(7),
             signingCredentials: creds
@@ -39,20 +51,19 @@ public class TokenService(IConfiguration configuration) : ITokenService
     public bool IsTokenValid(string token)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
-        var key = Encoding.UTF8.GetBytes(configuration["Jwt:Key"]!);
 
         var validationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ValidIssuer = configuration["Jwt:Issuer"],
-            ValidAudience = configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(key)
+            ValidIssuer = _configuration["Jwt:Issuer"],
+            ValidAudience = _configuration["Jwt:Audience"],
+            IssuerSigningKey = _publicKey
         };
         
         var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
         
-        return validatedToken is JwtSecurityToken jwt && jwt.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase);
+        return validatedToken is JwtSecurityToken jwt && jwt.Header.Alg.Equals(SecurityAlgorithms.RsaSha256, StringComparison.InvariantCultureIgnoreCase);
     }
 }
