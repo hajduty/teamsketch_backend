@@ -35,7 +35,7 @@ public class TokenService : ITokenService
             new Claim(JwtRegisteredClaimNames.Email, email)
         };
 
-        var creds = new SigningCredentials(new RsaSecurityKey(_privateRsa), SecurityAlgorithms.RsaSha256);
+        var creds = new SigningCredentials(new RsaSecurityKey(_privateRsa) { KeyId = "auth-key-1"}, SecurityAlgorithms.RsaSha256);
 
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
