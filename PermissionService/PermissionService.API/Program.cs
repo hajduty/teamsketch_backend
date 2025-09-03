@@ -1,4 +1,6 @@
 
+using PermissionService.Infrastructure;
+
 namespace PermissionService.API
 {
     public class Program
@@ -6,9 +8,10 @@ namespace PermissionService.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var config = builder.Configuration;
 
             // Add services to the container.
-
+            builder.Services.AddInfrastructure(config);
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -26,7 +29,6 @@ namespace PermissionService.API
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
