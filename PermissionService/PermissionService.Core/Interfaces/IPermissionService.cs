@@ -12,8 +12,9 @@ namespace PermissionService.Core.Interfaces
     {
         Task<Permission> GetUserPermission(int userId, string roomId);
         Task<List<Permission>> GetAllPermissions(int userId);
-        Task<bool> RemovePermissionFromUser(int userId, string roomId);
+        Task<bool> RemovePermissionFromUser(int userId, string roomId, int  currentUserId);
         Task<Permission> AddUserPermission(Permission perm, int currentUserId);
         Task<Permission> UpdateUserPermission(Permission newPerm, int currentUserId);
+        Task<List<Permission>> GetPermissionsForRoom(string roomId, int currentUserId);
     }
 }

@@ -8,10 +8,35 @@ namespace PermissionService.Infrastructure.Services
     {
         public async Task<Permission> AddUserPermission(Permission perm, int currentUserId)
         {
-            var userPermission = await permRepo.GetUserPermissionAsync(currentUserId, perm.Room);
+            var currentUserPermission = await permRepo.GetUserPermissionAsync(currentUserId, perm.Room, true);
 
-            if (userPermission == null || userPermission.Role != "Owner")
+            if (currentUserPermission == null)
+            {
+                var existingOwner = await permRepo.GetOwnerPermissionAsync(perm.Room);
+                if (existingOwner != null)
+                    throw new UnauthorizedAccessException("User is not the owner of this room.");
+
+                var ownerPermission = new Permission
+                {
+                    UserId = currentUserId,
+                    Room = perm.Room,
+                    Role = "Owner"
+                };
+
+                var createdOwner = await permRepo.AddUserPermissionAsync(ownerPermission);
+
+                if (createdOwner == null)
+                    throw new InvalidOperationException("Failed to create room with owner.");
+
+                return createdOwner;
+            }
+
+            if (currentUserPermission.Role != "Owner")
                 throw new UnauthorizedAccessException("User is not the owner of this room.");
+
+            var targetUserPermission = await permRepo.GetUserPermissionAsync(perm.UserId, perm.Room);
+            if (targetUserPermission != null)
+                throw new InvalidOperationException("User already has a role in this room.");
 
             var permission = await permRepo.AddUserPermissionAsync(perm);
 
@@ -24,6 +49,18 @@ namespace PermissionService.Infrastructure.Services
         public Task<List<Permission>> GetAllPermissions(int userId)
         {
             var permissions = permRepo.GetAllPermissions(userId);
+            return permissions;
+        }
+
+        public async Task<List<Permission>> GetPermissionsForRoom(string roomId, int currentUserId)
+        {
+            var currentUserPermission = await permRepo.GetUserPermissionAsync(currentUserId, roomId, true);
+
+            if (currentUserPermission == null || currentUserPermission.Role != "Owner")
+                throw new UnauthorizedAccessException("User is not the owner of this room.");
+
+            var permissions = await permRepo.GetPermissionsForRoomAsync(roomId);
+
             return permissions;
         }
 
@@ -64,4 +101,3 @@ namespace PermissionService.Infrastructure.Services
         }
     }
 }
-  

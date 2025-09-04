@@ -25,10 +25,12 @@ namespace PermissionService.Infrastructure.Repositories
             return permissions;
         }
 
-        public Task<Permission> GetUserPermissionAsync(int userId, string roomId)
+        public async Task<Permission> GetUserPermissionAsync(int userId, string roomId, bool asNoTracking = false)
         {
-            var permission = context.Permissions.FirstOrDefaultAsync(p => p.UserId == userId && p.Room == roomId);
-            return permission;
+            var query = context.Permissions.Where(p => p.UserId == userId && p.Room == roomId);
+            if (asNoTracking) query = query.AsNoTracking();
+
+            return await query.FirstOrDefaultAsync();
         }
 
         public async Task<bool> RemoveUserPermissionAsync(int userId, string roomId)
@@ -44,6 +46,13 @@ namespace PermissionService.Infrastructure.Repositories
             return true;
         }
 
+        public async Task<Permission?> GetOwnerPermissionAsync(string room)
+        {
+            return await context.Permissions
+                .Where(p => p.Room == room && p.Role == "Owner")
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<Permission> UpdateUserPermissionAsync(Permission newPerm)
         {
             var permission = context.Permissions.FirstOrDefault(p => p.UserId == newPerm.UserId && p.Room == newPerm.Room);
@@ -55,6 +64,13 @@ namespace PermissionService.Infrastructure.Repositories
 
             await context.SaveChangesAsync();
             return permission;
+        }
+
+        public Task<List<Permission>> GetPermissionsForRoomAsync(string roomId)
+        {
+            var permissions = context.Permissions.Where(p => p.Room == roomId).ToListAsync();
+
+            return permissions;
         }
     }
 }
