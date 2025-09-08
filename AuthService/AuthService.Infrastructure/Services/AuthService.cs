@@ -20,7 +20,7 @@ public class AuthService(User.UserClient userClient, ITokenService tokenService)
             }
 
             var token = tokenService.GenerateToken(response.Id, response.Email);
-            return new AuthResult { Success = true, Token = token };
+            return new AuthResult { Success = true, Token = token, User = response };
         }
         catch (RpcException ex)
         {
@@ -46,7 +46,7 @@ public class AuthService(User.UserClient userClient, ITokenService tokenService)
             }
 
             var token = tokenService.GenerateToken(response.Id, response.Email);
-            return new AuthResult { Success = true, Token = token };
+            return new AuthResult { Success = true, Token = token, User = response };
         }
         catch (RpcException ex)
         {
