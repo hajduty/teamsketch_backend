@@ -1,10 +1,9 @@
-﻿using PermissionService.Core.DTOs;
-using PermissionService.Core.Entities;
+﻿using PermissionService.Core.Entities;
 using PermissionService.Core.Interfaces;
 
 namespace PermissionService.Infrastructure.Services
 {
-    public class PermissionService(IPermissionRepository permRepo) : IPermissionService
+    public class PermissionService(IPermissionRepository permRepo, IPermissionChannel notifier) : IPermissionService
     {
         public async Task<Permission> AddUserPermission(Permission perm, int currentUserId)
         {
@@ -28,6 +27,8 @@ namespace PermissionService.Infrastructure.Services
                 if (createdOwner == null)
                     throw new InvalidOperationException("Failed to create room with owner.");
 
+                _ = notifier.NotifyPermissionAdded(currentUserId, perm.Room, "Owner");
+
                 return createdOwner;
             }
 
@@ -42,6 +43,8 @@ namespace PermissionService.Infrastructure.Services
 
             if (permission == null)
                 throw new InvalidOperationException("Failed to add permission.");
+
+            _ = notifier.NotifyPermissionAdded(perm.UserId, perm.Room, perm.Role);
 
             return permission;
         }
@@ -85,17 +88,19 @@ namespace PermissionService.Infrastructure.Services
             return result;
         }
 
-        public Task<Permission> UpdateUserPermission(Permission newPerm, int currentUserId)
+        public async Task<Permission> UpdateUserPermission(Permission newPerm, int currentUserId)
         {
-            var userPermission = permRepo.GetUserPermissionAsync(currentUserId, newPerm.Room).Result;
+            var userPermission = await permRepo.GetUserPermissionAsync(currentUserId, newPerm.Room);
 
             if (userPermission == null || userPermission.Role != "Owner")
                 throw new UnauthorizedAccessException("User is not the owner of this room.");
 
-            var permission = permRepo.UpdateUserPermissionAsync(newPerm);
+            var permission = await permRepo.UpdateUserPermissionAsync(newPerm);
 
             if (permission == null)
                 throw new InvalidOperationException("Failed to update permission.");
+
+            _ = notifier.NotifyPermissionChanged(newPerm.UserId, newPerm.Room, newPerm.Role);
 
             return permission;
         }

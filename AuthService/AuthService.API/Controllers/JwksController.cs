@@ -12,7 +12,7 @@ namespace AuthService.API.Controllers
 
         [HttpGet("jwks.json")]
         public IActionResult GetJwks()
-        {            
+        {
             var rsa = RsaKeyHelper.GetRsa(config);
             var key = new RsaSecurityKey(rsa)
             {
