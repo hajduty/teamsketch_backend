@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace PermissionService.Infrastructure.Services
 {
-    public class PermissionChannel : IPermissionChannel
+    public class PermissionNotifier : IPermissionNotifier
     {
         private readonly IHubContext<PermissionHub> _hubContext;
-        public PermissionChannel(IHubContext<PermissionHub> hubContext)
+        public PermissionNotifier(IHubContext<PermissionHub> hubContext)
         {
             _hubContext = hubContext;
         }

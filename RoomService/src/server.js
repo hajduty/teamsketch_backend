@@ -23,6 +23,7 @@ server.on('upgrade', (request, socket, head) => {
   // See https://github.com/websockets/ws#client-authentication
   wss.handleUpgrade(request, socket, head, /** @param {any} ws */ ws => {
     wss.emit('connection', ws, request)
+    console.log("new connection to")
   })
 })
 

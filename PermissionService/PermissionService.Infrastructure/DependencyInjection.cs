@@ -15,7 +15,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
-        services.AddSingleton<IPermissionChannel, PermissionChannel>();
+        services.AddSingleton<IPermissionNotifier, PermissionNotifier>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IPermissionService, Services.PermissionService>();
 

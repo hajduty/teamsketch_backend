@@ -3,7 +3,7 @@ using PermissionService.Core.Interfaces;
 
 namespace PermissionService.Infrastructure.Services
 {
-    public class PermissionService(IPermissionRepository permRepo, IPermissionChannel notifier) : IPermissionService
+    public class PermissionService(IPermissionRepository permRepo, IPermissionNotifier notifier) : IPermissionService
     {
         public async Task<Permission> AddUserPermission(Permission perm, int currentUserId)
         {

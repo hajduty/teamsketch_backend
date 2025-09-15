@@ -60,7 +60,7 @@ namespace PermissionService.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUserPermissionAsync([FromQuery] Permission permission)
+        public async Task<IActionResult> AddUserPermissionAsync([FromBody] Permission permission)
         {
             var currentUserId = GetCurrentUserId();
             var result = await permService.AddUserPermission(permission, currentUserId);
@@ -74,7 +74,7 @@ namespace PermissionService.API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> EditUserPermission([FromQuery] Permission perm)
+        public async Task<IActionResult> EditUserPermission([FromBody] Permission perm)
         {
             var currentUserId = GetCurrentUserId();
 
@@ -89,7 +89,7 @@ namespace PermissionService.API.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> RemoveUserPermissionAsync([FromQuery] int userId, string roomId)
+        public async Task<IActionResult> RemoveUserPermissionAsync([FromBody] int userId, string roomId)
         {
             var currentUserId = GetCurrentUserId();
 
