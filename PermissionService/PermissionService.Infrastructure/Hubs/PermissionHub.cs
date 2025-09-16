@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using PermissionService.Core.Entities;
 using PermissionService.Core.Interfaces;
+using System.Security.Claims;
 
 namespace PermissionService.Infrastructure.Hubs
 {
@@ -14,37 +15,38 @@ namespace PermissionService.Infrastructure.Hubs
 
         public override Task OnConnectedAsync()
         {
-            var userId = Context.UserIdentifier;
-            Console.WriteLine($"User connected: {userId}, Connection ID: {Context.ConnectionId}");
+            var email = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            Console.WriteLine($"User connected: {email}, Connection ID: {Context.ConnectionId}");
 
             return base.OnConnectedAsync();
         } 
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-            var userId = Context.UserIdentifier;
-            Console.WriteLine($"User  {userId}, Connection ID: {Context.ConnectionId} disconnected");
+            var email = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+            Console.WriteLine($"User  {email}, Connection ID: {Context.ConnectionId} disconnected");
 
             return base.OnDisconnectedAsync(exception);
         }
 
         public async Task<List<Permission>> GetRooms()
         {
-            var userId = Context.UserIdentifier;
-            if (userId == null)
+            var email = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            if (email == null)
                 throw new HubException("User not authenticated");
 
-            return await _permissionService.GetAllPermissions(int.Parse(userId));
+            return await _permissionService.GetAllPermissions(email);
         }
 
         public async Task<Permission> GetPermission(string roomId)
         {
-            var userId = Context.UserIdentifier;
+            var email = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
 
-            if (userId == null)
+            if (email == null)
                 throw new HubException("User not authenticated");
 
-            var permission = await _permissionService.GetUserPermission(int.Parse(userId), roomId);
+            var permission = await _permissionService.GetUserPermission(email, roomId);
 
             if (permission == null)
                 throw new HubException("No permission found for this room");
@@ -53,10 +55,11 @@ namespace PermissionService.Infrastructure.Hubs
 
         public async Task<Permission[]> GetPermissionsForRoom(string roomId)
         {
-            var userId = Context.UserIdentifier;
-            if (userId == null)
+            var email = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+            if (email == null)
                 throw new HubException("User not authenticated");
-            var permissions = await _permissionService.GetPermissionsForRoom(roomId, int.Parse(userId));
+            var permissions = await _permissionService.GetPermissionsForRoom(roomId, email);
             return permissions.ToArray();
         }
     }
