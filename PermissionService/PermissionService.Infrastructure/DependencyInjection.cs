@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PermissionService.Core.Interfaces;
 using PermissionService.Infrastructure.Data;
 using PermissionService.Infrastructure.Repositories;
+using PermissionService.Infrastructure.Services;
 
 namespace PermissionService.Infrastructure;
 
@@ -14,6 +15,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
+        services.AddSingleton<IPermissionNotifier, PermissionNotifier>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IPermissionService, Services.PermissionService>();
 

@@ -2,7 +2,7 @@
 
 public class Permission
 {
-    public int UserId { get; set; }
+    public string UserEmail { get; set; } = string.Empty;
     public string Room { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
 }

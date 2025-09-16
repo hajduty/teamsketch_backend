@@ -19,6 +19,21 @@ namespace TeamSketch.AuthService
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            var allowedOrigin = builder.Configuration["AllowedOrigin"];
+
+            Console.WriteLine($"allowedOrig: {builder.Configuration["AllowedOrigin"]}");
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowOrigin", policy =>
+                {
+                    policy.WithOrigins(allowedOrigin!)
+                          .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+                });
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -27,6 +42,8 @@ namespace TeamSketch.AuthService
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
+            app.UseCors("AllowOrigin");
 
             app.UseHttpsRedirection();
 
