@@ -4,6 +4,7 @@ import WebSocket from 'ws'
 import http from 'http'
 import * as number from 'lib0/number'
 import { setupWSConnection } from './utils.js'
+import { checkPermissionFromUrl } from './grpcClient.js'
 
 const wss = new WebSocket.Server({ noServer: true })
 const host = process.env.HOST || 'localhost'
@@ -16,11 +17,20 @@ const server = http.createServer((_request, response) => {
 
 wss.on('connection', setupWSConnection)
 
-server.on('upgrade', (request, socket, head) => {
+server.on('upgrade', async (request, socket, head) => {
   // You may check auth of request here..
   // Call `wss.HandleUpgrade` *after* you checked whether the client has access
   // (e.g. by checking cookies, or url parameters).
   // See https://github.com/websockets/ws#client-authentication
+
+  const userInfo = await checkPermissionFromUrl(request.url);
+
+  if (!userInfo) {
+    socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
+    socket.destroy();
+    return;
+  }
+  
   wss.handleUpgrade(request, socket, head, /** @param {any} ws */ ws => {
     wss.emit('connection', ws, request)
     console.log("new connection to")
