@@ -5,7 +5,7 @@ option csharp_namespace = "PermissionService.API";
 package permission;
 
 message PermissionRequest {
-  string userEmail = 1;
+  string token = 1;
   string room = 2;
 }
 
