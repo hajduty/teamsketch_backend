@@ -1,5 +1,6 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PermissionService.API.Middleware;
@@ -73,6 +74,15 @@ namespace PermissionService.API
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
+                });
+            });
+
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenAnyIP(7122, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http2; 
+                    listenOptions.UseHttps("../../Shared/Certs/server.pfx");
                 });
             });
 
