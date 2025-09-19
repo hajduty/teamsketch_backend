@@ -60,7 +60,7 @@ namespace PermissionService.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUserPermissionAsync([FromBody] Permission permission)
+        public async Task<IActionResult> AddUserPermissionAsync([FromBody] Core.Entities.Permission permission)
         {
             var currentUserEmail = GetCurrentUserEmail();
             var result = await permService.AddUserPermission(permission, currentUserEmail);
@@ -74,7 +74,7 @@ namespace PermissionService.API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> EditUserPermission([FromBody] Permission perm)
+        public async Task<IActionResult> EditUserPermission([FromBody] Core.Entities.Permission perm)
         {
             var currentUserEmail = GetCurrentUserEmail();
 

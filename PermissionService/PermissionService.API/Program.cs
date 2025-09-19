@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PermissionService.API.Middleware;
+using PermissionService.API.Services;
 using PermissionService.Infrastructure;
 using PermissionService.Infrastructure.Hubs;
 
@@ -22,6 +23,7 @@ namespace PermissionService.API
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+            builder.Services.AddGrpc();
 
             // URL to your JWKS endpoint
             var jwksUrl = config["AuthServiceURL"] + "/.well-known/jwks.json";
@@ -84,6 +86,8 @@ namespace PermissionService.API
             }
 
             app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+            app.MapGrpcService<PermissionGrpcService>();
 
             app.MapHub<PermissionHub>("api/permissionshub");
 

@@ -1,0 +1,20 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "PermissionService.API";
+
+package permission;
+
+message PermissionRequest {
+  string userEmail = 1;
+  string room = 2;
+}
+
+message PermissionResponse {
+  string userEmail = 1;
+  string room = 2;
+  string role = 3;
+}
+
+service Permission {
+  rpc CheckPermission (PermissionRequest) returns (PermissionResponse);
+}

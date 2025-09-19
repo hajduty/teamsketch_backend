@@ -14,4 +14,8 @@
     <Protobuf Include="Protos\user_service.proto" GrpcServices="Both" />
   </ItemGroup>
 
+  <ItemGroup>
+  	<Protobuf Include="Protos\permission_service.proto" Link="Protos\permission_service.proto" />
+  </ItemGroup>
+
 </Project>
