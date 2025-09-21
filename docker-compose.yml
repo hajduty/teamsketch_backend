@@ -1,0 +1,78 @@
+version: '3.9'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      SA_PASSWORD: "YourStrong(!)Password"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    networks:
+      - app-network
+
+  authservice:
+    build:
+      context: .
+      dockerfile: AuthService/Dockerfile
+    container_name: authservice
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sqlserver
+    networks:
+      - app-network
+
+  permissionservice:
+    build:
+      context: .
+      dockerfile: PermissionService/Dockerfile
+    container_name: permissionservice
+    environment:
+      AuthServiceURL: "http://authservice:8080"
+      CERT_PATH: "Shared/Certs/server.pfx"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+    ports:
+      - "7122:7122"
+    depends_on:
+      - authservice
+      - sqlserver
+    networks:
+      - app-network
+
+  roomservice:
+    build:
+      context: .
+      dockerfile: RoomService/Dockerfile
+    container_name: roomservice
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+      PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
+      CERT_PATH: "Shared/Certs/server.crt"
+    ports:
+      - "8081:8080"
+    depends_on:
+      - sqlserver
+    networks:
+      - app-network
+
+  userservice:
+    build:
+      context: .
+      dockerfile: UserService/Dockerfile
+    container_name: userservice
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+    ports:
+      - "8082:8080"
+    depends_on:
+      - sqlserver
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,10 +1,21 @@
-FROM node:12-alpine
+FROM node:20-alpine
 
-RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
+# Create app directory
+RUN mkdir -p /home/node/app && chown -R node:node /home/node/app
 WORKDIR /home/node/app
-COPY package*.json ./
+
+# Copy only package.json & package-lock.json
+COPY RoomService/package*.json ./ 
+COPY Shared/ ./Shared/
+
+# Install dependencies as root (or you could switch to node later)
+RUN npm install --only=production --legacy-peer-deps
+
+# Copy rest of the app code
+COPY --chown=node:node RoomService/ ./ 
+
+# Switch to non-root user
 USER node
-RUN npm install
-COPY --chown=node:node . .
+
 EXPOSE 1234
-CMD [ "npm", "start" ]
+CMD ["npm", "start"]
