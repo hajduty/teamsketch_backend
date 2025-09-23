@@ -26,8 +26,22 @@ namespace PermissionService.API
             builder.Services.AddSwaggerGen();
             builder.Services.AddGrpc();
 
+            var certPath = Environment.GetEnvironmentVariable("CERT_PATH") ?? "../../Shared/Certs/server.pfx";
+
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.ListenAnyIP(7122, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http2;
+                    listenOptions.UseHttps(certPath);
+                });
+            });
+
             // URL to your JWKS endpoint
             var jwksUrl = config["AuthServiceURL"] + "/.well-known/jwks.json";
+
+            Console.WriteLine($"AuthServiceURL: {jwksUrl}");
+            Console.WriteLine(certPath);
 
             // Fetch JWKS from AuthService
             var httpClient = new HttpClient();
@@ -74,15 +88,6 @@ namespace PermissionService.API
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials();
-                });
-            });
-
-            builder.WebHost.ConfigureKestrel(options =>
-            {
-                options.ListenAnyIP(7122, listenOptions =>
-                {
-                    listenOptions.Protocols = HttpProtocols.Http2; 
-                    listenOptions.UseHttps("../../Shared/Certs/server.pfx");
                 });
             });
 

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: roomservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: roomservice
+  template:
+    metadata:
+      labels:
+        app: roomservice
+    spec:
+      containers:
+      - name: roomservice
+        image: roomservice:1.0
+        ports:
+        - containerPort: 8080
+        env:
+        - name: PERMISSION_SERVICE_URL
+          value: "http://permissionservice:8080"
+        - name: CERT_PATH
+          value: "Shared/Certs/server.crt"
+        - name: PROTO_PATH
+          value: "Shared/Contracts/Protos/permission_service.proto"
