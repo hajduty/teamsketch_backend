@@ -13,7 +13,7 @@ namespace UserService.Grpc.Services
             try
             {
                 var result = await userService.LoginUser(request.Email, request.Password);
-                return new UserResponse { Id = result.Id, Email = result.Email };
+                return new UserResponse { Id = result.Id.ToString(), Email = result.Email };
             }
             catch(AuthenticationException ex)
             {
@@ -30,7 +30,7 @@ namespace UserService.Grpc.Services
                     Email = request.Email,
                     Password = request.Password
                 });
-                return new UserResponse { Id = result.Id, Email = result.Email };
+                return new UserResponse { Id = result.Id.ToString(), Email = result.Email };
             }
             catch(AuthenticationException ex)
             {

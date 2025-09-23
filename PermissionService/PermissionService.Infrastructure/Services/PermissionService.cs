@@ -5,9 +5,9 @@ namespace PermissionService.Infrastructure.Services
 {
     public class PermissionService(IPermissionRepository permRepo, IPermissionNotifier notifier) : IPermissionService
     {
-        public async Task<Permission> AddUserPermission(Permission perm, string currentUserEmail)
+        public async Task<Permission> AddUserPermission(Permission perm, string currentUserId)
         {
-            var currentUserPermission = await permRepo.GetUserPermissionAsync(currentUserEmail, perm.Room, true);
+            var currentUserPermission = await permRepo.GetUserPermissionAsync(currentUserId, perm.Room, true);
 
             if (currentUserPermission == null)
             {
@@ -17,9 +17,10 @@ namespace PermissionService.Infrastructure.Services
 
                 var ownerPermission = new Permission
                 {
-                    UserEmail = perm.UserEmail,
+                    UserId = perm.UserId,
                     Room = perm.Room,
-                    Role = "Owner"
+                    Role = "Owner",
+                    UserEmail = perm.UserEmail
                 };
 
                 var createdOwner = await permRepo.AddUserPermissionAsync(ownerPermission);
@@ -35,7 +36,7 @@ namespace PermissionService.Infrastructure.Services
             if (currentUserPermission.Role != "Owner")
                 throw new UnauthorizedAccessException("User is not the owner of this room.");
 
-            var targetUserPermission = await permRepo.GetUserPermissionAsync(perm.UserEmail, perm.Room);
+            var targetUserPermission = await permRepo.GetUserPermissionAsync(perm.UserId, perm.Room);
             if (targetUserPermission != null)
                 throw new InvalidOperationException("User already has a role in this room.");
 
@@ -49,15 +50,15 @@ namespace PermissionService.Infrastructure.Services
             return permission;
         }
 
-        public Task<List<Permission>> GetAllPermissions(string userEmail)
+        public Task<List<Permission>> GetAllPermissions(string userId)
         {
-            var permissions = permRepo.GetAllPermissions(userEmail);
+            var permissions = permRepo.GetAllPermissions(userId);
             return permissions;
         }
 
-        public async Task<List<Permission>> GetPermissionsForRoom(string roomId, string currentUserEmail)
+        public async Task<List<Permission>> GetPermissionsForRoom(string roomId, string currentUserId)
         {
-            var currentUserPermission = await permRepo.GetUserPermissionAsync(currentUserEmail, roomId, true);
+            var currentUserPermission = await permRepo.GetUserPermissionAsync(currentUserId, roomId, true);
 
             if (currentUserPermission == null)
                 throw new UnauthorizedAccessException("User does not have access to this room.");
@@ -67,20 +68,20 @@ namespace PermissionService.Infrastructure.Services
             return permissions;
         }
 
-        public Task<Permission> GetUserPermission(string userEmail, string roomId)
+        public Task<Permission> GetUserPermission(string userId, string roomId)
         {
-            var permission = permRepo.GetUserPermissionAsync(userEmail, roomId);
+            var permission = permRepo.GetUserPermissionAsync(userId, roomId);
             return permission;
         }
 
-        public async Task<bool> RemovePermissionFromUser(string userEmail, string roomId, string requestUserEmail)
+        public async Task<bool> RemovePermissionFromUser(string userId, string roomId, string requestUserId)
         {
-            var userPermission = permRepo.GetUserPermissionAsync(requestUserEmail, roomId).Result;
+            var userPermission = permRepo.GetUserPermissionAsync(requestUserId, roomId).Result;
 
             if (userPermission == null || userPermission.Role != "Owner")
                 throw new UnauthorizedAccessException("User is not the owner of this room.");
 
-            var result = await permRepo.RemoveUserPermissionAsync(userEmail, roomId);
+            var result = await permRepo.RemoveUserPermissionAsync(userId, roomId);
 
             if (result == false)
                 throw new InvalidOperationException("Failed to remove permission.");
@@ -88,14 +89,14 @@ namespace PermissionService.Infrastructure.Services
             return result;
         }
 
-        public async Task<Permission> UpdateUserPermission(Permission newPerm, string currentUserEmail)
+        public async Task<Permission> UpdateUserPermission(Permission newPerm, string currentUserId)
         {
-            var userPermission = await permRepo.GetUserPermissionAsync(currentUserEmail, newPerm.Room);
+            var userPermission = await permRepo.GetUserPermissionAsync(currentUserId, newPerm.Room);
 
             if (userPermission == null || userPermission.Role != "Owner")
                 throw new UnauthorizedAccessException("User is not the owner of this room.");
 
-            if (newPerm.UserEmail == userPermission.UserEmail && userPermission.Role == "Owner")
+            if (newPerm.UserId == userPermission.UserId && userPermission.Role == "Owner")
                 throw new InvalidOperationException("Owner permission cannot be changed.");
 
             var permission = await permRepo.UpdateUserPermissionAsync(newPerm);

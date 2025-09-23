@@ -10,11 +10,11 @@ namespace PermissionService.Core.Interfaces
 {
     public interface IPermissionService
     {
-        Task<Permission> GetUserPermission(string userEmail, string roomId);
-        Task<List<Permission>> GetAllPermissions(string userEmail);
-        Task<bool> RemovePermissionFromUser(string userEmail, string roomId, string currentUserEmail);
-        Task<Permission> AddUserPermission(Permission perm, string currentUserEmail);
-        Task<Permission> UpdateUserPermission(Permission newPerm, string currentUserEmail);
-        Task<List<Permission>> GetPermissionsForRoom(string roomId, string currentUserEmail);
+        Task<Permission> GetUserPermission(string userId, string roomId);
+        Task<List<Permission>> GetAllPermissions(string userId);
+        Task<bool> RemovePermissionFromUser(string userId, string roomId, string currentUserId);
+        Task<Permission> AddUserPermission(Permission perm, string currentUserId);
+        Task<Permission> UpdateUserPermission(Permission newPerm, string currentUserId);
+        Task<List<Permission>> GetPermissionsForRoom(string roomId, string currentUserId);
     }
 }

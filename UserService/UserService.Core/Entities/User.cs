@@ -5,9 +5,9 @@ namespace UserService.Core.Entities;
 public class User
 {
     [Key]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     [Required]
-    public string Email { get; set; }
+    public required string Email { get; set; }
     [Required]
     public string PasswordHash { get; set; } = string.Empty;
 }

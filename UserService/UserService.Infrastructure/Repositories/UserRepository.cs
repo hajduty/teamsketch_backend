@@ -27,7 +27,7 @@ public class UserRepository(AppDbContext context) : IUserRepository
         return newUser;
     }
 
-    public async Task<User?> UpdateUser(int userId, string email, string newPassword)
+    public async Task<User?> UpdateUser(Guid userId, string email, string newPassword)
     {
         var user = await context.Users.FindAsync(userId);
 
@@ -47,12 +47,12 @@ public class UserRepository(AppDbContext context) : IUserRepository
         return user;
     }
 
-    public Task<User> DeleteUser(int userId)
+    public Task<User> DeleteUser(Guid userId)
     {
         throw new NotImplementedException();
     }
 
-    public async Task<User?> GetUserById(int userId) => await context.Users.FindAsync(userId);
+    public async Task<User?> GetUserById(Guid userId) => await context.Users.FindAsync(userId);
 
     public async Task<List<User>> GetAllUsers()
     {

@@ -2,7 +2,7 @@
 
 public interface ITokenService
 {
-    string GenerateToken(int userId, string email);
-    string GenerateRefreshToken(int userId, string email);
+    string GenerateToken(string userId, string email);
+    string GenerateRefreshToken(string userId, string email);
     bool IsTokenValid(string token);
 }

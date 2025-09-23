@@ -23,7 +23,7 @@ namespace PermissionService.Infrastructure.Migrations
 
             modelBuilder.Entity("PermissionService.Core.Entities.Permission", b =>
                 {
-                    b.Property<string>("UserEmail")
+                    b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Room")
@@ -33,7 +33,11 @@ namespace PermissionService.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("UserEmail", "Room");
+                    b.Property<string>("UserEmail")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "Room");
 
                     b.ToTable("Permissions");
                 });
