@@ -14,7 +14,7 @@ namespace PermissionService.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Permission>()
-                .HasKey(p => new { p.UserEmail, p.Room });
+                .HasKey(p => new { p.UserId, p.Room });
         }
     }
 }

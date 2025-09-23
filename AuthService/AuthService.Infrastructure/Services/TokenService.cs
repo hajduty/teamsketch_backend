@@ -22,16 +22,16 @@ public class TokenService : ITokenService
         _configuration = configuration;
     }
 
-    public string GenerateRefreshToken(int userId, string email)
+    public string GenerateRefreshToken(string userId, string email)
     {
         throw new NotImplementedException();
     }
 
-    public string GenerateToken(int userId, string email)
+    public string GenerateToken(string userId, string email)
     {
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+            new Claim(JwtRegisteredClaimNames.Sub, userId),
             new Claim(JwtRegisteredClaimNames.Email, email)
         };
 

@@ -10,7 +10,7 @@ message PermissionRequest {
 }
 
 message PermissionResponse {
-  string userEmail = 1;
+  string userId = 1;
   string room = 2;
   string role = 3;
 }

@@ -11,7 +11,7 @@ using PermissionService.Infrastructure.Data;
 namespace PermissionService.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250903095338_InitialCreate")]
+    [Migration("20250923091118_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -26,8 +26,8 @@ namespace PermissionService.Infrastructure.Migrations
 
             modelBuilder.Entity("PermissionService.Core.Entities.Permission", b =>
                 {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Room")
                         .HasColumnType("nvarchar(450)");

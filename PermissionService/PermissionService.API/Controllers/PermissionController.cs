@@ -13,9 +13,9 @@ namespace PermissionService.API.Controllers
     [Authorize]
     public class PermissionController(IPermissionService permService) : ControllerBase
     {
-        private string GetCurrentUserEmail()
+        private string GetCurrentUserId()
         {
-            var claim = User.FindFirst(ClaimTypes.Email)?.Value;
+            var claim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(claim))
                 throw new UnauthorizedAccessException("Invalid user claim.");
@@ -24,36 +24,36 @@ namespace PermissionService.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetUserPermissionAsync([FromQuery] string userEmail, [FromQuery] string roomId)
+        public async Task<IActionResult> GetUserPermissionAsync([FromQuery] string userId, [FromQuery] string roomId)
         {
-            if (GetCurrentUserEmail() != userEmail)
+            if (GetCurrentUserId() != userId)
             {
                 return Forbid();
             }
 
-            var result = await permService.GetUserPermission(userEmail, roomId);
+            var result = await permService.GetUserPermission(userId, roomId);
 
             if (result == null)
             {
-                return NotFound($"No permission found for user {userEmail} in room {roomId}.");
+                return NotFound($"No permission found for user {userId} in room {roomId}.");
             }
 
             return Ok(result);
         }
 
         [HttpGet("all")]
-        public async Task<IActionResult> GetAllUserPermissions([FromQuery] string userEmail)
+        public async Task<IActionResult> GetAllUserPermissions([FromQuery] string userId)
         {
-            if (GetCurrentUserEmail() != userEmail)
+            if (GetCurrentUserId() != userId)
             {
                 return Forbid();
             }
 
-            var result = await permService.GetAllPermissions(userEmail);
+            var result = await permService.GetAllPermissions(userId);
 
             if (result == null)
             {
-                return NotFound($"No permissions found for user {userEmail}.");
+                return NotFound($"No permissions found for user {userId}.");
             }
 
             return Ok(result);
@@ -62,8 +62,8 @@ namespace PermissionService.API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddUserPermissionAsync([FromBody] Core.Entities.Permission permission)
         {
-            var currentUserEmail = GetCurrentUserEmail();
-            var result = await permService.AddUserPermission(permission, currentUserEmail);
+            var currentUserId = GetCurrentUserId();
+            var result = await permService.AddUserPermission(permission, currentUserId);
 
             if (result == null)
             {
@@ -76,9 +76,9 @@ namespace PermissionService.API.Controllers
         [HttpPut]
         public async Task<IActionResult> EditUserPermission([FromBody] Core.Entities.Permission perm)
         {
-            var currentUserEmail = GetCurrentUserEmail();
+            var currentUserId = GetCurrentUserId();
 
-            var result = await permService.UpdateUserPermission(perm, currentUserEmail);
+            var result = await permService.UpdateUserPermission(perm, currentUserId);
 
             if (result == null)
             {
@@ -91,9 +91,9 @@ namespace PermissionService.API.Controllers
         [HttpDelete]
         public async Task<IActionResult> RemoveUserPermissionAsync([FromBody] string userEmail, string roomId)
         {
-            var currentUserEmail = GetCurrentUserEmail();
+            var currentUserId = GetCurrentUserId();
 
-            var result = await permService.RemovePermissionFromUser(userEmail, roomId, currentUserEmail);
+            var result = await permService.RemovePermissionFromUser(userEmail, roomId, currentUserId);
 
             if (result == false)
             {
@@ -106,13 +106,13 @@ namespace PermissionService.API.Controllers
         [HttpGet("room")]
         public async Task<IActionResult> GetRoomPermissions([FromQuery] string roomId)
         {
-            var currentUserEmail = GetCurrentUserEmail();
+            var currentUserId = GetCurrentUserId();
 
-            var permissions = await permService.GetPermissionsForRoom(roomId, currentUserEmail);
+            var permissions = await permService.GetPermissionsForRoom(roomId, currentUserId);
 
             if (permissions == null || permissions.Count == 0)
             {
-                return NotFound($"No permissions found for user {currentUserEmail}.");
+                return NotFound($"No permissions found for user {currentUserId}.");
             }
 
             return Ok(permissions);

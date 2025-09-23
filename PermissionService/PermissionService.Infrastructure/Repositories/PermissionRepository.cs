@@ -9,7 +9,7 @@ namespace PermissionService.Infrastructure.Repositories
     {
         public async Task<Permission> AddUserPermissionAsync(Permission perm)
         {
-            var permission = new Permission { Role = perm.Role, Room = perm.Room, UserEmail = perm.UserEmail };
+            var permission = new Permission { Role = perm.Role, Room = perm.Room, UserId = perm.UserId, UserEmail = perm.UserEmail };
 
             await context.Permissions.AddAsync(permission);
 
@@ -18,24 +18,24 @@ namespace PermissionService.Infrastructure.Repositories
             return permission;
         }
 
-        public Task<List<Permission>> GetAllPermissions(string userEmail)
+        public Task<List<Permission>> GetAllPermissions(string userId)
         {
-            var permissions = context.Permissions.Where(p => p.UserEmail == userEmail).ToListAsync();
+            var permissions = context.Permissions.Where(p => p.UserId == userId).ToListAsync();
 
             return permissions;
         }
 
-        public async Task<Permission> GetUserPermissionAsync(string currentUserEmail, string roomId, bool asNoTracking = false)
+        public async Task<Permission> GetUserPermissionAsync(string currentUserId, string roomId, bool asNoTracking = false)
         {
-            var query = context.Permissions.Where(p => p.UserEmail == currentUserEmail && p.Room == roomId);
+            var query = context.Permissions.Where(p => p.UserId == currentUserId && p.Room == roomId);
             if (asNoTracking) query = query.AsNoTracking();
 
             return await query.FirstOrDefaultAsync();
         }
 
-        public async Task<bool> RemoveUserPermissionAsync(string userEmail, string roomId)
+        public async Task<bool> RemoveUserPermissionAsync(string userId, string roomId)
         {
-            var permission = context.Permissions.FirstOrDefault(p => p.UserEmail == userEmail && p.Room == roomId);
+            var permission = context.Permissions.FirstOrDefault(p => p.UserId == userId && p.Room == roomId);
 
             if (permission == null)
                 return false;
@@ -55,7 +55,7 @@ namespace PermissionService.Infrastructure.Repositories
 
         public async Task<Permission> UpdateUserPermissionAsync(Permission newPerm)
         {
-            var permission = context.Permissions.FirstOrDefault(p => p.UserEmail == newPerm.UserEmail && p.Room == newPerm.Room);
+            var permission = context.Permissions.FirstOrDefault(p => p.UserId == newPerm.UserId && p.Room == newPerm.Room);
 
             if (permission == null)
                 return new Permission();
