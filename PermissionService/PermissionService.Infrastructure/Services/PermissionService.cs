@@ -59,8 +59,8 @@ namespace PermissionService.Infrastructure.Services
         {
             var currentUserPermission = await permRepo.GetUserPermissionAsync(currentUserEmail, roomId, true);
 
-            if (currentUserPermission == null || currentUserPermission.Role != "Owner")
-                throw new UnauthorizedAccessException("User is not the owner of this room.");
+            if (currentUserPermission == null)
+                throw new UnauthorizedAccessException("User does not have access to this room.");
 
             var permissions = await permRepo.GetPermissionsForRoomAsync(roomId);
 
@@ -94,6 +94,9 @@ namespace PermissionService.Infrastructure.Services
 
             if (userPermission == null || userPermission.Role != "Owner")
                 throw new UnauthorizedAccessException("User is not the owner of this room.");
+
+            if (newPerm.UserEmail == userPermission.UserEmail && userPermission.Role == "Owner")
+                throw new InvalidOperationException("Owner permission cannot be changed.");
 
             var permission = await permRepo.UpdateUserPermissionAsync(newPerm);
 
