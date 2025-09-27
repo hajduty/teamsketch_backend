@@ -2,6 +2,6 @@
 
 public interface IPermissionNotifier
 {
-    Task NotifyPermissionChanged(int userId, string roomId, string newRole);
-    Task NotifyPermissionAdded(int userId, string roomId, string role);
+    Task NotifyPermissionChanged(string userId, string roomId, string newRole);
+    Task NotifyPermissionAdded(string userId, string roomId, string role);
 }

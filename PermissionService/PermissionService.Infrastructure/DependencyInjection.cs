@@ -15,6 +15,13 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
+        var userServiceUrl = Environment.GetEnvironmentVariable("USER_SERVICE_URL") ?? "https://localhost:7288";
+
+        services.AddGrpcClient<UserService.Grpc.User.UserClient>(o =>
+        {
+            o.Address = new Uri(userServiceUrl);
+        });
+
         services.AddSingleton<IPermissionNotifier, PermissionNotifier>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();
         services.AddScoped<IPermissionService, Services.PermissionService>();

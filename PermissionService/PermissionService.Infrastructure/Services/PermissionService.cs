@@ -1,9 +1,11 @@
-﻿using PermissionService.Core.Entities;
+﻿using Grpc.Core;
+using PermissionService.Core.Entities;
 using PermissionService.Core.Interfaces;
+using UserService.Grpc;
 
 namespace PermissionService.Infrastructure.Services
 {
-    public class PermissionService(IPermissionRepository permRepo, IPermissionNotifier notifier) : IPermissionService
+    public class PermissionService(IPermissionRepository permRepo, IPermissionNotifier notifier, User.UserClient userClient) : IPermissionService
     {
         public async Task<Permission> AddUserPermission(Permission perm, string currentUserId)
         {
@@ -12,6 +14,7 @@ namespace PermissionService.Infrastructure.Services
             if (currentUserPermission == null)
             {
                 var existingOwner = await permRepo.GetOwnerPermissionAsync(perm.Room);
+
                 if (existingOwner != null)
                     throw new UnauthorizedAccessException("User is not the owner of this room.");
 
@@ -28,7 +31,7 @@ namespace PermissionService.Infrastructure.Services
                 if (createdOwner == null)
                     throw new InvalidOperationException("Failed to create room with owner.");
 
-                //_ = notifier.NotifyPermissionAdded(currentUserEmail, perm.Room, "Owner");
+                _ = notifier.NotifyPermissionAdded(currentUserId, perm.Room, "Owner");
 
                 return createdOwner;
             }
@@ -40,12 +43,24 @@ namespace PermissionService.Infrastructure.Services
             if (targetUserPermission != null)
                 throw new InvalidOperationException("User already has a role in this room.");
 
+            UserResponse trueUser;
+            try
+            {
+                trueUser = await userClient.EmailToUidAsync(new EmailToUidRequest { Email = perm.UserEmail });
+            }
+            catch (RpcException ex) when (ex.Status.StatusCode == StatusCode.NotFound)
+            {
+                throw new InvalidOperationException("User does not exist.");
+            }
+
+            perm.UserId = trueUser.Id;
+
             var permission = await permRepo.AddUserPermissionAsync(perm);
 
             if (permission == null)
                 throw new InvalidOperationException("Failed to add permission.");
 
-            //_ = notifier.NotifyPermissionAdded(perm.UserId, perm.Room, perm.Role);
+            _ = notifier.NotifyPermissionAdded(perm.UserId, perm.Room, perm.Role);
 
             return permission;
         }
@@ -104,7 +119,7 @@ namespace PermissionService.Infrastructure.Services
             if (permission == null)
                 throw new InvalidOperationException("Failed to update permission.");
 
-            //_ = notifier.NotifyPermissionChanged(newPerm.UserEmail, newPerm.Room, newPerm.Role);
+            _ = notifier.NotifyPermissionChanged(newPerm.UserId, newPerm.Room, newPerm.Role);
 
             return permission;
         }

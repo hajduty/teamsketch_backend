@@ -7,6 +7,7 @@ package user;
 service User {
   rpc Login (LoginRequest) returns (UserResponse);
   rpc Register (RegisterRequest) returns (UserResponse);
+  rpc EmailToUid (EmailToUidRequest) returns (UserResponse);
 }
 
 message LoginRequest {
@@ -22,4 +23,8 @@ message RegisterRequest {
 message UserResponse {
   string id = 1;
   string email = 2;
+}
+
+message EmailToUidRequest {
+    string email = 1;
 }

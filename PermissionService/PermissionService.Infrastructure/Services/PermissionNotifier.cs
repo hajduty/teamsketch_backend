@@ -17,15 +17,15 @@ namespace PermissionService.Infrastructure.Services
             _hubContext = hubContext;
         }
 
-        public async Task NotifyPermissionChanged(int userId, string roomId, string role)
+        public async Task NotifyPermissionChanged(string userId, string roomId, string role)
         {
-            await _hubContext.Clients.User(userId.ToString())
+            await _hubContext.Clients.User(userId)
                 .SendAsync("PermissionChanged", new { RoomId = roomId, Role = role });
         }
 
-        public async Task NotifyPermissionAdded(int userId, string roomId, string role)
+        public async Task NotifyPermissionAdded(string userId, string roomId, string role)
         {
-            await _hubContext.Clients.User(userId.ToString())
+            await _hubContext.Clients.User(userId)
                 .SendAsync("PermissionAdded", new { RoomId = roomId, Role = role });
         }
     }
