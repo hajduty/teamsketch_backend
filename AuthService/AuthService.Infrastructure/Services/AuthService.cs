@@ -24,7 +24,7 @@ public class AuthService(User.UserClient userClient, ITokenService tokenService)
         }
         catch (RpcException ex)
         {
-            return new AuthResult { Success = false, ErrorMessage = ex.Message };
+            return new AuthResult { Success = false, ErrorMessage = ex.Status.Detail };
         }
     }
 
@@ -50,7 +50,7 @@ public class AuthService(User.UserClient userClient, ITokenService tokenService)
         }
         catch (RpcException ex)
         {
-            return new AuthResult { Success = false, ErrorMessage = ex.Message };
+            return new AuthResult { Success = false, ErrorMessage = ex.Status.Detail };
         }
     }
 }
