@@ -15,7 +15,7 @@ namespace UserService.Grpc.Services
                 var result = await userService.LoginUser(request.Email, request.Password);
                 return new UserResponse { Id = result.Id.ToString(), Email = result.Email };
             }
-            catch(AuthenticationException ex)
+            catch (AuthenticationException ex)
             {
                 throw new RpcException(new Status(StatusCode.Unauthenticated, ex.Message));
             }
@@ -32,7 +32,20 @@ namespace UserService.Grpc.Services
                 });
                 return new UserResponse { Id = result.Id.ToString(), Email = result.Email };
             }
-            catch(AuthenticationException ex)
+            catch (AuthenticationException ex)
+            {
+                throw new RpcException(new Status(StatusCode.Unauthenticated, ex.Message));
+            }
+        }
+
+        public override async Task<UserResponse> EmailToUid(EmailToUidRequest request, ServerCallContext context)
+        {
+            try
+            {
+                var result = await userService.EmailToUserId(request.Email);
+                return new UserResponse { Id = result.Id.ToString(), Email = result.Email };
+            }
+            catch (Exception ex)
             {
                 throw new RpcException(new Status(StatusCode.Unauthenticated, ex.Message));
             }

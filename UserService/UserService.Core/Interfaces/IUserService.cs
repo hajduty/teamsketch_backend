@@ -6,4 +6,5 @@ public interface IUserService
 {
     public Task<UserResponse> RegisterUser(CreateUserRequest request);
     public Task<UserResponse> LoginUser(string email, string password);
+    public Task<UserResponse> EmailToUserId(string email);
 }

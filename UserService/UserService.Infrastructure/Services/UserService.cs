@@ -49,4 +49,16 @@ public class UserService(IUserRepository userRepository) : IUserService
             Email = user.Email,
         };
     }
+
+    public async Task<UserResponse> EmailToUserId(string email)
+    {
+        var user = await userRepository.GetUserByEmail(email);
+
+        if (user == null )
+        {
+            throw new AuthenticationException("Email not registered");
+        }
+
+        return new UserResponse { Email = user.Email, Id = user.Id };
+    }
 }
