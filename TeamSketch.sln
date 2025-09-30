@@ -37,6 +37,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Tests", "AuthSe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Tests", "UserService\UserService.Tests\UserService.Tests.csproj", "{EA6BFC79-E401-4A09-B011-926D00506DC3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PermissionService.Tests", "PermissionService\PermissionService.Tests\PermissionService.Tests.csproj", "{35A9CADD-1843-433C-895F-9BF359A6840B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -91,6 +93,10 @@ Global
 		{EA6BFC79-E401-4A09-B011-926D00506DC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EA6BFC79-E401-4A09-B011-926D00506DC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EA6BFC79-E401-4A09-B011-926D00506DC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35A9CADD-1843-433C-895F-9BF359A6840B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35A9CADD-1843-433C-895F-9BF359A6840B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35A9CADD-1843-433C-895F-9BF359A6840B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35A9CADD-1843-433C-895F-9BF359A6840B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,6 +114,7 @@ Global
 		{0B679EC0-2883-42BC-8E90-470F17995305} = {E040FA79-31F0-44DB-864C-75F211842491}
 		{970D9B00-9B6D-4D43-ADA0-6AC4CCCBC9FA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{EA6BFC79-E401-4A09-B011-926D00506DC3} = {048A40D3-33A0-4C5F-B787-458FC291A282}
+		{35A9CADD-1843-433C-895F-9BF359A6840B} = {E040FA79-31F0-44DB-864C-75F211842491}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4758188D-6BAB-48CB-8A08-60E5103673DA}
