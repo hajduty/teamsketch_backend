@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.20" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.20" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AuthService\AuthService.API\AuthService.API.csproj" />
+    <ProjectReference Include="..\AuthService\AuthService.Core\AuthService.Core.csproj" />
+    <ProjectReference Include="..\AuthService\AuthService.Infrastructure\AuthService.Infrastructure.csproj" />
+    <ProjectReference Include="..\PermissionService\PermissionService.API\PermissionService.API.csproj" />
+    <ProjectReference Include="..\PermissionService\PermissionService.Core\PermissionService.Core.csproj" />
+    <ProjectReference Include="..\PermissionService\PermissionService.Infrastructure\PermissionService.Infrastructure.csproj" />
+    <ProjectReference Include="..\Shared\Contracts\Contracts.csproj" />
+    <ProjectReference Include="..\UserService\UserService.Core\UserService.Core.csproj" />
+    <ProjectReference Include="..\UserService\UserService.Grpc\UserService.Grpc.csproj" />
+    <ProjectReference Include="..\UserService\UserService.Infrastructure\UserService.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>

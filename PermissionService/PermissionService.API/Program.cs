@@ -38,15 +38,17 @@ namespace PermissionService.API
             });
 
             // URL to your JWKS endpoint
-            var jwksUrl = config["AuthServiceURL"] + "/.well-known/jwks.json";
+            //var jwksUrl = config["AuthServiceURL"] + "/.well-known/jwks.json";
 
-            Console.WriteLine($"AuthServiceURL: {jwksUrl}");
-            Console.WriteLine(certPath);
+            //Console.WriteLine($"AuthServiceURL: {jwksUrl}");
+            //Console.WriteLine(certPath);
 
             // Fetch JWKS from AuthService
-            var httpClient = new HttpClient();
-            var jwksJson = await httpClient.GetStringAsync(jwksUrl);
-            var jwks = new JsonWebKeySet(jwksJson);
+            //var httpClient = new HttpClient();
+            //var jwksJson = await httpClient.GetStringAsync(jwksUrl);
+            var authServiceUrl = builder.Configuration["AuthServiceURL"];
+            var jwtValidator = new JwtValidator(authServiceUrl!);
+            var jwks = await jwtValidator.GetJwksAsync();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>

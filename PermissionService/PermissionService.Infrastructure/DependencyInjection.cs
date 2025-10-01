@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PermissionService.API;
 using PermissionService.Core.Interfaces;
 using PermissionService.Infrastructure.Data;
 using PermissionService.Infrastructure.Repositories;
@@ -12,8 +13,11 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
-        services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+        if (!services.Any(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>)))
+        {
+            services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+        }
 
         var userServiceUrl = Environment.GetEnvironmentVariable("USER_SERVICE_URL") ?? "https://localhost:7288";
 

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11010.61 d18.0
+VisualStudioVersion = 18.0.11010.61
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.API", "AuthService\AuthService.API\AuthService.API.csproj", "{BDFBD452-55C2-4F71-B94C-3748BD3E8F0B}"
 EndProject
@@ -32,6 +32,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PermissionService.Core", "PermissionService\PermissionService.Core\PermissionService.Core.csproj", "{9DAAE0F8-8089-4AE2-AF98-EB8180867ED0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PermissionService.Infrastructure", "PermissionService\PermissionService.Infrastructure\PermissionService.Infrastructure.csproj", "{0B679EC0-2883-42BC-8E90-470F17995305}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthService.Tests", "AuthService\AuthService.Tests\AuthService.Tests.csproj", "{970D9B00-9B6D-4D43-ADA0-6AC4CCCBC9FA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UserService.Tests", "UserService\UserService.Tests\UserService.Tests.csproj", "{EA6BFC79-E401-4A09-B011-926D00506DC3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PermissionService.Tests", "PermissionService\PermissionService.Tests\PermissionService.Tests.csproj", "{35A9CADD-1843-433C-895F-9BF359A6840B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "E2E.Tests", "E2E.Tests\E2E.Tests.csproj", "{F1253682-B8A1-44B2-8AFC-C0D0821CB829}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +87,22 @@ Global
 		{0B679EC0-2883-42BC-8E90-470F17995305}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B679EC0-2883-42BC-8E90-470F17995305}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B679EC0-2883-42BC-8E90-470F17995305}.Release|Any CPU.Build.0 = Release|Any CPU
+		{970D9B00-9B6D-4D43-ADA0-6AC4CCCBC9FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{970D9B00-9B6D-4D43-ADA0-6AC4CCCBC9FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{970D9B00-9B6D-4D43-ADA0-6AC4CCCBC9FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{970D9B00-9B6D-4D43-ADA0-6AC4CCCBC9FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA6BFC79-E401-4A09-B011-926D00506DC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA6BFC79-E401-4A09-B011-926D00506DC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA6BFC79-E401-4A09-B011-926D00506DC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA6BFC79-E401-4A09-B011-926D00506DC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35A9CADD-1843-433C-895F-9BF359A6840B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35A9CADD-1843-433C-895F-9BF359A6840B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35A9CADD-1843-433C-895F-9BF359A6840B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35A9CADD-1843-433C-895F-9BF359A6840B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1253682-B8A1-44B2-8AFC-C0D0821CB829}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1253682-B8A1-44B2-8AFC-C0D0821CB829}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1253682-B8A1-44B2-8AFC-C0D0821CB829}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1253682-B8A1-44B2-8AFC-C0D0821CB829}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -94,6 +118,9 @@ Global
 		{C53328EF-95A3-401F-A06E-8A85B6D348D3} = {E040FA79-31F0-44DB-864C-75F211842491}
 		{9DAAE0F8-8089-4AE2-AF98-EB8180867ED0} = {E040FA79-31F0-44DB-864C-75F211842491}
 		{0B679EC0-2883-42BC-8E90-470F17995305} = {E040FA79-31F0-44DB-864C-75F211842491}
+		{970D9B00-9B6D-4D43-ADA0-6AC4CCCBC9FA} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{EA6BFC79-E401-4A09-B011-926D00506DC3} = {048A40D3-33A0-4C5F-B787-458FC291A282}
+		{35A9CADD-1843-433C-895F-9BF359A6840B} = {E040FA79-31F0-44DB-864C-75F211842491}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4758188D-6BAB-48CB-8A08-60E5103673DA}
