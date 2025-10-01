@@ -21,4 +21,11 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Run tests
-      run: dotnet test --verbosity normal
+      run: dotnet test --no-restore --verbosity normal --logger "trx;LogFileName=test-results.trx"
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Test Results
+        path: '**/test-results.trx'
+        reporter: dotnet-trx
