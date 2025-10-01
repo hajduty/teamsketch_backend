@@ -71,9 +71,6 @@ namespace E2E.Tests.Flows
             var responseBody = await createRoomResp.Content.ReadAsStringAsync();
             Console.WriteLine($"Response: {responseBody}");
 
-            //Test
-            createRoomResp.StatusCode = System.Net.HttpStatusCode.Forbidden;
-
             createRoomResp.EnsureSuccessStatusCode();
         }
     }
