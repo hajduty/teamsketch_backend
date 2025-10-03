@@ -15,6 +15,7 @@ namespace PermissionService.Tests
         private readonly Mock<IPermissionNotifier> _permNotifier;
         private readonly Mock<User.UserClient> _userClient;
         private readonly Infrastructure.Services.PermissionService _permService;
+        private readonly Mock<IPermissionPublisher> _permPublisher;
 
         private static AsyncUnaryCall<T> CreateAsyncUnaryCall<T>(T response)
         {
@@ -32,7 +33,8 @@ namespace PermissionService.Tests
             _permRepo = new Mock<IPermissionRepository>();
             _permNotifier = new Mock<IPermissionNotifier>();
             _userClient = new Mock<User.UserClient>();
-            _permService = new Infrastructure.Services.PermissionService(_permRepo.Object, _permNotifier.Object, _userClient.Object);
+            _permPublisher = new Mock<IPermissionPublisher>();
+            _permService = new Infrastructure.Services.PermissionService(_permRepo.Object, _permNotifier.Object, _userClient.Object, _permPublisher.Object);
         }
 
         [Fact]
