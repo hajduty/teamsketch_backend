@@ -194,3 +194,35 @@ export const setupWSConnection = async (conn,req,{ gc = true } = {}) => {
     send(doc, conn, encoding.toUint8Array(encoder2))
   }
 }
+
+export const closeConnectionByUserAndRoom = (targetUserId, targetRoomId) => {
+  let closedAny = false;
+
+  for (const doc of docs.values()) {
+    if (doc.name !== targetRoomId) continue; // only check the target room
+
+    const awarenessStates = doc.awareness.getStates();
+
+    for (const [clientID, state] of awarenessStates.entries()) {
+      if (state && state.userId === targetUserId) {
+        for (const [conn, controlledIDs] of doc.conns.entries()) {
+          if (controlledIDs.has(clientID)) {
+            console.log(`Found user ${targetUserId} (Client ID: ${clientID}) in room ${doc.name}. Closing connection...`);
+            try {
+              conn.close();
+              closedAny = true;
+            } catch (e) {
+              console.error(`Error closing connection for user ID ${targetUserId}:`, e);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (!closedAny) {
+    console.log(`No active connection found for user ID: ${targetUserId} in room ${targetRoomId}`);
+  }
+
+  return closedAny;
+};

@@ -31,19 +31,26 @@ const client = new permissionPackage.Permission(
   creds
 );
 
+console.log(process.env.PERMISSION_SERVICE_URL);
+
 export async function checkPermissionFromUrl(url) {
   try {
     const parts = url.split("/").filter(Boolean);
     const room = parts[0];
     const token = parts[1];
 
-    if (!room || !token) return null;
+    //console.log("Checking for perms.");
+
+    if (!room || !token) {
+      console.log("No token, or roomId");
+      return null
+     };
 
     return await new Promise((resolve) => {
       client.CheckPermission({ token, room }, (err, response) => {
         if (err || !response || response.role === "None") {
           // Reject connection
-          console.log(response);
+          //console.log("Response: ");
           return resolve(null);
         }
         resolve(response);
