@@ -1,11 +1,13 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using PermissionService.API.Middleware;
 using PermissionService.API.Services;
 using PermissionService.Infrastructure;
+using PermissionService.Infrastructure.Data;
 using PermissionService.Infrastructure.Hubs;
 
 namespace PermissionService.API
@@ -33,7 +35,7 @@ namespace PermissionService.API
                 options.ListenAnyIP(7122, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http2;
-                    listenOptions.UseHttps(certPath);
+                    listenOptions.UseHttps(certPath, "YourPassword");
                 });
             });
 

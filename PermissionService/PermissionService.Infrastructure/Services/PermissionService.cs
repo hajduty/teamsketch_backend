@@ -5,7 +5,7 @@ using UserService.Grpc;
 
 namespace PermissionService.Infrastructure.Services
 {
-    public class PermissionService(IPermissionRepository permRepo, IPermissionNotifier notifier, User.UserClient userClient) : IPermissionService
+    public class PermissionService(IPermissionRepository permRepo, IPermissionNotifier notifier, User.UserClient userClient, IPermissionPublisher redisPublisher) : IPermissionService
     {
         public async Task<Permission> AddUserPermission(Permission perm, string currentUserId)
         {
@@ -91,7 +91,7 @@ namespace PermissionService.Infrastructure.Services
 
         public async Task<bool> RemovePermissionFromUser(string userId, string roomId, string requestUserId)
         {
-            var userPermission = permRepo.GetUserPermissionAsync(requestUserId, roomId).Result;
+            var userPermission = await permRepo.GetUserPermissionAsync(requestUserId, roomId);
 
             if (userPermission == null || userPermission.Role != "Owner")
                 throw new UnauthorizedAccessException("User is not the owner of this room.");
@@ -100,6 +100,8 @@ namespace PermissionService.Infrastructure.Services
 
             if (result == false)
                 throw new InvalidOperationException("Failed to remove permission.");
+
+            await redisPublisher.PublishKickRequestAsync(userId,roomId, "Permission changed");
 
             return result;
         }

@@ -7,8 +7,9 @@ import { checkPermissionFromUrl } from './grpcClient.js'
 import * as number from 'lib0/number'
 import * as Y from 'yjs'
 import { setPersistence, setupWSConnection } from './utils.js'
+import './redisSubscription.js'
 
-const host = process.env.HOST || 'localhost'
+const host = process.env.HOST || '0.0.0.0'
 const port = number.parseInt(process.env.PORT || '1234')
 
 const ldb = new LeveldbPersistence('./yjs-database')
@@ -38,7 +39,7 @@ const wss = new WebSocket.Server({ noServer: true })
 
 wss.on('connection', async (ws, req) => {
   await setupWSConnection(ws, req)
-  console.log(`New connection to room "${req.url?.slice(1) || 'default-room'}"`)
+  //console.log(`New connection to room "${req.url?.slice(1) || 'default-room'}"`)
 })
 
 server.on('upgrade', async (request, socket, head) => {

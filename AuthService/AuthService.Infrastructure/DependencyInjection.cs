@@ -10,11 +10,9 @@ public static class DependencyInjection
     {
         services.AddSingleton<ITokenService, Services.TokenService>();
 
-        var userServiceUrl = Environment.GetEnvironmentVariable("USER_SERVICE_URL") ?? "https://localhost:7288";
-
         services.AddGrpcClient<UserService.Grpc.User.UserClient>(o =>
         {
-            o.Address = new Uri(userServiceUrl);
+            o.Address = new Uri(config["UserServiceURL"]);
         });
 
         services.AddScoped<IAuthService, Services.AuthService>();

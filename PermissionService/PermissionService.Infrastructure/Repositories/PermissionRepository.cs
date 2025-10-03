@@ -35,7 +35,7 @@ namespace PermissionService.Infrastructure.Repositories
 
         public async Task<bool> RemoveUserPermissionAsync(string userId, string roomId)
         {
-            var permission = context.Permissions.FirstOrDefault(p => p.UserId == userId && p.Room == roomId);
+            var permission = await context.Permissions.Where(p => p.UserId == userId && p.Room == roomId).FirstOrDefaultAsync();
 
             if (permission == null)
                 return false;
