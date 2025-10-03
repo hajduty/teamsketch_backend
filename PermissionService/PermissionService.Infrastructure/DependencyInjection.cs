@@ -6,6 +6,7 @@ using PermissionService.Core.Interfaces;
 using PermissionService.Infrastructure.Data;
 using PermissionService.Infrastructure.Repositories;
 using PermissionService.Infrastructure.Services;
+using StackExchange.Redis;
 
 namespace PermissionService.Infrastructure;
 
@@ -19,12 +20,16 @@ public static class DependencyInjection
                 options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
         }
 
-        var userServiceUrl = Environment.GetEnvironmentVariable("USER_SERVICE_URL") ?? "https://localhost:7288";
-
         services.AddGrpcClient<UserService.Grpc.User.UserClient>(o =>
         {
-            o.Address = new Uri(userServiceUrl);
+            o.Address = new Uri(config["UserServiceURL"]);
         });
+
+        services.AddSingleton<IConnectionMultiplexer>(
+            ConnectionMultiplexer.Connect(config.GetConnectionString("RedisConnectionString"))
+        );
+
+        services.AddSingleton<IPermissionPublisher, PermissionPublisher>();
 
         services.AddSingleton<IPermissionNotifier, PermissionNotifier>();
         services.AddScoped<IPermissionRepository, PermissionRepository>();

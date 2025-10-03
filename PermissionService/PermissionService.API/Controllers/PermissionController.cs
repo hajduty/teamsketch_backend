@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using PermissionService.Core.DTOs;
 using PermissionService.Core.Entities;
 using PermissionService.Core.Interfaces;
+using PermissionService.Infrastructure.Migrations;
 using System.Security;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -89,7 +91,7 @@ namespace PermissionService.API.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> RemoveUserPermissionAsync([FromBody] string userEmail, string roomId)
+        public async Task<IActionResult> RemoveUserPermissionAsync([FromQuery] string userEmail, string roomId)
         {
             var currentUserId = GetCurrentUserId();
 
