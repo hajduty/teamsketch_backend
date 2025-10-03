@@ -12,6 +12,12 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: 'redis:alpine'
+    container_name: redis
+    ports:
+      - '6379:6379'
+
   authservice:
     build:
       context: .
@@ -19,9 +25,11 @@ services:
     container_name: authservice
     environment:
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+      USER_SERVICE_URL: "http://userservice:8080"
     ports:
       - "8080:8080"
     depends_on:
+      - userservice
       - sqlserver
     networks:
       - app-network
@@ -33,13 +41,16 @@ services:
     container_name: permissionservice
     environment:
       AuthServiceURL: "http://authservice:8080"
+      UserServiceURL: "http://userservice:8080"
       CERT_PATH: "Shared/Certs/server.pfx"
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+      RedisConnectionString: "redis:6379"
     ports:
       - "7122:7122"
     depends_on:
       - authservice
-      - sqlserver
+      - redis
+      - userservice
     networks:
       - app-network
 
@@ -52,10 +63,12 @@ services:
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
       PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
       CERT_PATH: "Shared/Certs/server.crt"
+      REDIS_URL: "redis:6379"
+      PERMISSION_SERVICE_URL: "permissionservice:7122"
     ports:
-      - "8081:8080"
+      - "1234:1234"
     depends_on:
-      - sqlserver
+      - permissionservice
     networks:
       - app-network
 
