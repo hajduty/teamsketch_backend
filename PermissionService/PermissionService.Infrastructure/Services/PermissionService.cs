@@ -101,6 +101,8 @@ namespace PermissionService.Infrastructure.Services
             if (result == false)
                 throw new InvalidOperationException("Failed to remove permission.");
 
+            _ = notifier.NotifyPermissionChanged(userId, roomId, "None");
+
             await redisPublisher.PublishKickRequestAsync(userId,roomId, "Permission changed");
 
             return result;
