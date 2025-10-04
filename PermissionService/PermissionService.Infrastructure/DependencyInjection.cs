@@ -14,6 +14,12 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration config)
     {
+        services.AddSignalR()
+            .AddStackExchangeRedis(config.GetConnectionString("RedisConnectionString"), options =>
+            {
+                options.Configuration.ChannelPrefix = RedisChannel.Literal("SignalR");
+            });
+
         if (!services.Any(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>)))
         {
             services.AddDbContext<AppDbContext>(options =>
