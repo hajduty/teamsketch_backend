@@ -27,26 +27,20 @@ namespace PermissionService.API
             builder.Services.AddSwaggerGen();
             builder.Services.AddGrpc();
 
-            var certPath = Environment.GetEnvironmentVariable("CERT_PATH") ?? "../../Shared/Certs/server.pfx";
-
             builder.WebHost.ConfigureKestrel(options =>
             {
                 options.ListenAnyIP(7122, listenOptions =>
                 {
                     listenOptions.Protocols = HttpProtocols.Http2;
-                    listenOptions.UseHttps(certPath, "YourPassword");
+                });
+
+                // HTTP/1.1 endpoint for REST API
+                options.ListenAnyIP(7100, listenOptions =>
+                {
+                    listenOptions.Protocols = HttpProtocols.Http1;
                 });
             });
 
-            // URL to your JWKS endpoint
-            //var jwksUrl = config["AuthServiceURL"] + "/.well-known/jwks.json";
-
-            //Console.WriteLine($"AuthServiceURL: {jwksUrl}");
-            //Console.WriteLine(certPath);
-
-            // Fetch JWKS from AuthService
-            //var httpClient = new HttpClient();
-            //var jwksJson = await httpClient.GetStringAsync(jwksUrl);
             var authServiceUrl = builder.Configuration["AuthServiceURL"];
             var jwtValidator = new JwtValidator(authServiceUrl!);
             var jwks = await jwtValidator.GetJwksAsync();
@@ -108,8 +102,6 @@ namespace PermissionService.API
             app.MapGrpcService<PermissionGrpcService>();
 
             app.MapHub<PermissionHub>("api/permissionshub");
-
-            app.UseHttpsRedirection();
 
             app.UseCors("AllowOrigin");
 

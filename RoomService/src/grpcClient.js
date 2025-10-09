@@ -6,7 +6,7 @@ import fs from "fs";
 dotenv.config();
 
 var protoPath = process.env.PROTO_PATH ?? "../Shared/Contracts/Protos/permission_service.proto";
-var certPath = process.env.CERT_PATH ?? "../Shared/Certs/server.crt";
+//var certPath = process.env.CERT_PATH ?? "../Shared/Certs/server.crt";
 
 // Load the .proto
 const packageDef = protoLoader.loadSync(protoPath, {
@@ -17,14 +17,15 @@ const packageDef = protoLoader.loadSync(protoPath, {
   oneofs: true,
 });
 
-const rootCert = fs.readFileSync(certPath);
-const creds = grpc.credentials.createSsl(rootCert);
+//const rootCert = fs.readFileSync(certPath);
+//const creds = grpc.credentials.createSsl(rootCert);
 
 // Load package
 const grpcObj = grpc.loadPackageDefinition(packageDef);
 const permissionPackage = grpcObj.permission;
 
-// Create the client
+const creds = grpc.credentials.createInsecure();
+
 // @ts-ignore
 const client = new permissionPackage.Permission(
   process.env.PERMISSION_SERVICE_URL || "localhost:7122", // e.g. "localhost:50051"
@@ -50,7 +51,7 @@ export async function checkPermissionFromUrl(url) {
       client.CheckPermission({ token, room }, (err, response) => {
         if (err || !response || response.role === "None") {
           // Reject connection
-          //console.log("Response: ");
+          //console.log(token, err);
           return resolve(null);
         }
         resolve(response);
