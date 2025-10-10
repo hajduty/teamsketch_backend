@@ -63,10 +63,10 @@ namespace E2E.Tests.Flows
             catch (Exception ex)
             {
                 var (stdout, stderr) = await _fixture.PermissionService.GetLogsAsync();
-                Debug.WriteLine("=== CONTAINER STDOUT ===");
-                Debug.WriteLine(stdout);
-                Debug.WriteLine("=== CONTAINER STDERR ===");
-                Debug.WriteLine(stderr);
+                _output.WriteLine("=== CONTAINER STDOUT ===");
+                _output.WriteLine(stdout);
+                _output.WriteLine("=== CONTAINER STDERR ===");
+                _output.WriteLine(stderr);
                 throw;
             }
         }
