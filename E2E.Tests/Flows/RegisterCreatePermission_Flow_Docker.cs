@@ -42,14 +42,16 @@ namespace E2E.Tests.Flows
                 loginResp.EnsureSuccessStatusCode();
                 var loginResult = await loginResp.Content.ReadFromJsonAsync<AuthResult>()!;
 
-                var user = ((JsonElement)loginResult.User).Deserialize<UserResponse>();
+                var userElement = (JsonElement)loginResult.User;
+                var userId = userElement.GetProperty("id").GetGuid();
+                var userEmail = userElement.GetProperty("email").GetString();
 
                 _permClient.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", loginResult.Token);
 
                 var payload = new
                 {
-                    Room = "newRoom",
+                    Room = "RegisterCreatePermissionFlowRoom",
                     UserEmail = "user@example.com",
                     Role = "Owner"
                 };
