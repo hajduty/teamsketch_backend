@@ -101,7 +101,7 @@ namespace E2E.Tests.Fixtures
             // Now build and start services with the actual connection strings
             // Use container names for internal communication within the network
             UserService = new ContainerBuilder()
-                .WithImage("webapplication4-userservice:latest")
+                .WithImage("teamsketch_backend-userservice:latest")
                 .WithNetwork(_network)
                 .WithNetworkAliases("userservice")
                 .WithEnvironment("ConnectionStrings__DefaultConnection", "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;")
@@ -114,7 +114,7 @@ namespace E2E.Tests.Fixtures
             await UserService.StartAsync();
 
             AuthService = new ContainerBuilder()
-                .WithImage("webapplication4-authservice:latest")
+                .WithImage("teamsketch_backend-authservice:latest")
                 .WithNetwork(_network)
                 .WithNetworkAliases("authservice")
                 .WithEnvironment("ConnectionStrings__DefaultConnection", "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;")
@@ -130,7 +130,7 @@ namespace E2E.Tests.Fixtures
             await AuthService.StartAsync();
 
             PermissionService = new ContainerBuilder()
-                .WithImage("webapplication4-permissionservice:latest")
+                .WithImage("teamsketch_backend-permissionservice:latest")
                 .WithNetwork(_network)
                 .WithNetworkAliases("permissionservice")
                 .WithEnvironment("ConnectionStrings__DefaultConnection", "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;")
@@ -149,7 +149,7 @@ namespace E2E.Tests.Fixtures
             await PermissionService.StartAsync();
 
             RoomService = new ContainerBuilder()
-                .WithImage("webapplication4-roomservice:latest")
+                .WithImage("teamsketch_backend-roomservice:latest")
                 .WithNetwork(_network)
                 .WithNetworkAliases("roomservice")
                 .WithEnvironment("ConnectionStrings__DefaultConnection", "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;")
