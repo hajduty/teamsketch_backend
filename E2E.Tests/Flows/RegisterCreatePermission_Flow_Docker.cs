@@ -36,6 +36,8 @@ namespace E2E.Tests.Flows
                 var registerResp = await _authClient.PostAsJsonAsync("/api/auth/Register", req);
                 registerResp.EnsureSuccessStatusCode();
 
+                await Task.Delay(200);
+
                 var loginResp = await _authClient.PostAsJsonAsync("/api/auth/Login", req);
                 loginResp.EnsureSuccessStatusCode();
                 var loginResult = await loginResp.Content.ReadFromJsonAsync<AuthResult>()!;
