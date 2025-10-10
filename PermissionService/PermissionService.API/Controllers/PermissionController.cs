@@ -91,11 +91,11 @@ namespace PermissionService.API.Controllers
         }
 
         [HttpDelete]
-        public async Task<IActionResult> RemoveUserPermissionAsync([FromQuery] string userEmail, string roomId)
+        public async Task<IActionResult> RemoveUserPermissionAsync([FromQuery] string userId, string roomId)
         {
             var currentUserId = GetCurrentUserId();
 
-            var result = await permService.RemovePermissionFromUser(userEmail, roomId, currentUserId);
+            var result = await permService.RemovePermissionFromUser(userId, roomId, currentUserId);
 
             if (result == false)
             {
