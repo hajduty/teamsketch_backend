@@ -36,7 +36,7 @@ namespace E2E.Tests.Flows
                 var registerResp = await _authClient.PostAsJsonAsync("/api/auth/Register", req);
                 registerResp.EnsureSuccessStatusCode();
 
-                await Task.Delay(200);
+                await Task.Delay(2000);
 
                 var loginResp = await _authClient.PostAsJsonAsync("/api/auth/Login", req);
                 loginResp.EnsureSuccessStatusCode();
@@ -53,6 +53,8 @@ namespace E2E.Tests.Flows
                     UserEmail = "user@example.com",
                     Role = "Owner"
                 };
+
+                await Task.Delay(2000);
 
                 var create = await _permClient.PostAsJsonAsync("/api/Permission", payload);
                 create.EnsureSuccessStatusCode();
