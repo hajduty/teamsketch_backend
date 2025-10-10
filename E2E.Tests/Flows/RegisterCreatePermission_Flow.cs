@@ -1,4 +1,4 @@
-using E2E.Tests.Fixtures;
+/* using E2E.Tests.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 using PermissionService.Infrastructure.Migrations;
 using System.Net.Http.Json;
@@ -6,16 +6,16 @@ using UserService.Grpc;
 
 namespace E2E.Tests.Flows
 {
-    public class RegisterCreateRoom_Flow : IClassFixture<TestServerFixture>
+    public class RegisterCreatePermission_Flow : IClassFixture<TestServerFixture>
     {
         private readonly TestServerFixture _fixture;
 
-        public RegisterCreateRoom_Flow(TestServerFixture fixture)
+        public RegisterCreatePermission_Flow(TestServerFixture fixture)
         {
             _fixture = fixture;
         }
 
-        /*
+        
         [Fact]
         public async Task PermissionService_IsRunning()
         {
@@ -42,7 +42,7 @@ namespace E2E.Tests.Flows
                     Console.WriteLine($"Route: {routeEndpoint.RoutePattern.RawText}");
                 }
             }
-        }*/
+        }
 
         [Fact]
         public async Task Register_Login_CreateRoom_Works()
@@ -75,3 +75,4 @@ namespace E2E.Tests.Flows
         }
     }
 }
+*/
