@@ -1,0 +1,4 @@
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'TS')
+BEGIN
+    EXEC('CREATE DATABASE [TS]');
+END;

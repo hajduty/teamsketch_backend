@@ -19,14 +19,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Setup Docker
+      uses: docker/setup-buildx-action@v3
+      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+
+    - name: Build Docker images
+      run: docker compose build
+
     - name: Restore dependencies
       run: dotnet restore
+      
     - name: Run tests
       run: dotnet test --no-restore --verbosity normal --logger "trx;LogFileName=test-results.trx"
+      
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: always()

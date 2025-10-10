@@ -23,6 +23,7 @@ namespace PermissionService.API.Middleware
             catch (Exception ex)
             {
                 _logger.LogError("Unhandled exception caught by middleware");
+                _logger.LogError(ex.Message);
                 await HandleExceptionAsync(context, ex);
             }
         }

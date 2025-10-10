@@ -17,6 +17,10 @@ services:
     container_name: redis
     ports:
       - '6379:6379'
+    networks:
+      app-network:
+        aliases:
+          - redis
 
   authservice:
     build:
@@ -25,14 +29,16 @@ services:
     container_name: authservice
     environment:
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
-      USER_SERVICE_URL: "http://userservice:8080"
+      UserServiceURL: "http://userservice:8080"
     ports:
-      - "8080:8080"
+      - "7154:8080"
     depends_on:
       - userservice
       - sqlserver
     networks:
-      - app-network
+      app-network:
+        aliases:
+          - authservice
 
   permissionservice:
     build:
@@ -42,17 +48,19 @@ services:
     environment:
       AuthServiceURL: "http://authservice:8080"
       UserServiceURL: "http://userservice:8080"
-      CERT_PATH: "Shared/Certs/server.pfx"
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
-      RedisConnectionString: "redis:6379"
+      ConnectionStrings__RedisConnectionString: "redis:6379,abortConnect=false"
+      ASPNETCORE_URLS: "http://0.0.0.0:7122"
     ports:
       - "7122:7122"
+      - "7100:7100"
     depends_on:
       - authservice
-      - redis
       - userservice
     networks:
-      - app-network
+      app-network:
+        aliases:
+          - permissionservice
 
   roomservice:
     build:
@@ -62,15 +70,18 @@ services:
     environment:
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
       PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
-      CERT_PATH: "Shared/Certs/server.crt"
+      #CERT_PATH: "Shared/Certs/server.crt"
       REDIS_URL: "redis:6379"
       PERMISSION_SERVICE_URL: "permissionservice:7122"
     ports:
       - "1234:1234"
     depends_on:
       - permissionservice
+      - redis
     networks:
-      - app-network
+      app-network:
+        aliases:
+          - roomservice
 
   userservice:
     build:
@@ -84,7 +95,9 @@ services:
     depends_on:
       - sqlserver
     networks:
-      - app-network
+      app-network:
+        aliases:
+          - userservice
 
 networks:
   app-network:

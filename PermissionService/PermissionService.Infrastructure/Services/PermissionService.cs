@@ -16,7 +16,7 @@ namespace PermissionService.Infrastructure.Services
                 var existingOwner = await permRepo.GetOwnerPermissionAsync(perm.Room);
 
                 if (existingOwner != null)
-                    throw new UnauthorizedAccessException("User is not the owner of this room.");
+                    throw new UnauthorizedAccessException("User is not the owner of this room 1.");
 
                 var ownerPermission = new Permission
                 {
@@ -37,7 +37,7 @@ namespace PermissionService.Infrastructure.Services
             }
 
             if (currentUserPermission.Role != "Owner")
-                throw new UnauthorizedAccessException("User is not the owner of this room.");
+                throw new UnauthorizedAccessException("User is not the owner of this room 2.");
 
             var targetUserPermission = await permRepo.GetUserPermissionAsync(perm.UserId, perm.Room);
             if (targetUserPermission != null)

@@ -23,6 +23,7 @@ public class PermissionPublisher : IPermissionPublisher
     public async Task PublishKickRequestAsync(string userId, string roomId, string reason)
     {
         var message = JsonSerializer.Serialize(new { UserId = userId, Reason = reason, RoomId = roomId });
+        Console.WriteLine("Sent redis event");
         await _subscriber.PublishAsync(KickChannel, message);
     }
 }
