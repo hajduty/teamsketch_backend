@@ -25,19 +25,23 @@ stages:
       matrix:
         authservice:
           dockerfile: 'AuthService/Dockerfile'
+          serviceName: 'authservice'
         permissionservice:
           dockerfile: 'PermissionService/Dockerfile'
+          serviceName: 'permissionservice'
         roomservice:
           dockerfile: 'RoomService/Dockerfile'
+          serviceName: 'roomservice'
         userservice:
           dockerfile: 'UserService/Dockerfile'
+          serviceName: 'userservice'
     steps:
     - task: Docker@2
       displayName: Build & Push $(Build.Repository.Name) image
       inputs:
         containerRegistry: 'k8sTeamSketch'
         command: buildAndPush
-        repository: '$(Build.Repository.Name)'
+        repository: 'hajduty/$(serviceName)'
         dockerfile: '$(Build.SourcesDirectory)/$(dockerfile)'
         buildContext: '$(Build.SourcesDirectory)'
         tags: '$(tag)'
