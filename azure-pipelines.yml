@@ -33,7 +33,7 @@ stages:
     - task: Docker@2
       displayName: Build & Push $(Build.Repository.Name) image
       inputs:
-        containerRegistry: 'acr-docker-connection'
+        containerRegistry: 'k8sTeamSketch'
         command: buildAndPush
         repository: '$(Build.Repository.Name)'
         dockerfile: '$(Build.SourcesDirectory)/$(dockerfile)'
