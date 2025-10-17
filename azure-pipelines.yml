@@ -18,7 +18,9 @@ stages:
   - job: BuildImages
     displayName: Build Images
     pool:
-      vmImage: 'ubuntu-latest'
+      name: Default
+      demands:
+        - docker
     strategy:
       matrix:
         authservice:
