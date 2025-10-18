@@ -14,6 +14,8 @@ namespace UserService.Grpc
             builder.Services.AddGrpc();
             builder.Services.AddInfrastructure(config);
 
+            Console.WriteLine(config["ConnectionStrings:DefaultConnection"]);
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
