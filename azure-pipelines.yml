@@ -9,7 +9,9 @@ resources:
 - repo: self
 
 variables:
-  tag: '$(Build.BuildId)'
+  - group: 'TS-secrets'
+  - name: tag
+    value: '$(Build.BuildId)'
 
 stages:
 - stage: Build
@@ -45,3 +47,26 @@ stages:
         dockerfile: '$(Build.SourcesDirectory)/$(dockerfile)'
         buildContext: '$(Build.SourcesDirectory)'
         tags: '$(tag)'
+
+- stage: Migration
+  displayName: 'Run Database Migrations'
+  dependsOn: Build
+  jobs:
+  - job: MigrationJob
+    displayName: 'Execute EF Core Migrations'
+    pool:
+      name: Default
+      demands:
+        - docker
+    steps:
+    - checkout: self
+    - script: |
+        echo "Starting DB Migrations..."
+
+        dotnet tool install --global dotnet-ef
+        dotnet ef database update --project UserService/UserService.Infrastructure --startup-project UserService/UserService.Grpc --connection "$(dbConnectionString)"
+        dotnet ef database update --project PermissionService/PermissionService.Infrastructure --startup-project PermissionService/PermissionService.API --connection "$(dbConnectionString)"
+        
+        echo "DB Migrations completed."
+      displayName: 'Execute EF Core Migrations'
+      workingDirectory: '$(Build.SourcesDirectory)'
