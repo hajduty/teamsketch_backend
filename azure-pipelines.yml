@@ -55,7 +55,9 @@ stages:
   - job: MigrationJob
     displayName: 'Execute EF Core Migrations'
     pool:
-      vmImage: 'ubuntu-latest'
+      name: Default
+      demands:
+        - docker
     steps:
     - checkout: self
     - script: |
