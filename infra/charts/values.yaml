@@ -1,0 +1,57 @@
+env:
+  UserServiceURL: "http://teamsketch-userservice:8080"
+  AuthServiceURL: "http://teamsketch-authservice:8080"
+  ConnectionStrings__RedisConnectionString: "teamsketch-redis:6379,abortConnect=false"
+  PERMISSION_SERVICE_URL: "teamsketch-permissionservice:7122"
+  REDIS_URL: "teamsketch-redis:6379"
+  PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
+  PORT: 8080
+
+replicaCount: 1
+
+keyVault:
+  secretProviderClass: "azure-kv-secrets"
+
+redis:
+  image: "redis:alpine"
+  containerPort: 6379
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: "50m"
+    limits:
+      memory: "128Mi" 
+      cpu: "100m"
+
+authservice:
+  repository: "tsacr3244.azurecr.io/hajduty/authservice"
+  containerPort: 8080
+  tag: "9"
+
+permissionservice:
+  repository: "tsacr3244.azurecr.io/hajduty/permissionservice"
+  tag: "9"
+
+roomservice:
+  repository: "tsacr3244.azurecr.io/hajduty/roomservice"
+  containerPort: 8080
+  tag: "10"
+
+userservice:
+  repository: "tsacr3244.azurecr.io/hajduty/userservice"
+  containerPort: 8080
+  tag: "9"
+
+controller:
+  service:
+    annotations:
+      service.beta.kubernetes.io/azure-load-balancer-health-probe-protocol: "tcp"
+      service.beta.kubernetes.io/azure-load-balancer-health-probe-interval: "5"
+    
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+
+  healthCheckPath: "/healthz"
+
+certManager:
+  email: "me@hajder.app"

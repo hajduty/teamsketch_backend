@@ -362,3 +362,5 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 RoomService/yjs-database/*
+infra/charts/charts/cert-manager-v1.13.2.tgz
+infra/charts/Chart.lock

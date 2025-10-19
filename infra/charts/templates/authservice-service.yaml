@@ -1,10 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: authservice
+  name: {{ .Chart.Name }}-authservice
+  labels:
+    app: {{ .Chart.Name }}-authservice
 spec:
   selector:
-    app: authservice
+    app: {{ .Chart.Name }}-authservice
   ports:
     - protocol: TCP
       port: 8080

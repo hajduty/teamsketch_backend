@@ -1,10 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: permissionservice
+  name: {{ .Chart.Name }}-userservice
+  labels:
+    app: {{ .Chart.Name }}-userservice
 spec:
   selector:
-    app: permissionservice
+    app: {{ .Chart.Name }}-userservice
   ports:
     - protocol: TCP
       port: 8080

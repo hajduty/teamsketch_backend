@@ -1,0 +1,11 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": { "value": "centralindia" },
+    "aksName": { "value": "myakscluster" },
+    "acrName": { "value": "tsacr3244" },
+    "rgName": { "value": "ts-rg" },
+    "keyVaultName": {"value": "ts-keyvault-3244"}
+  }
+}

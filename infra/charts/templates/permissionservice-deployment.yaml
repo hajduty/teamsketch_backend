@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-permissionservice
+  labels:
+    app: {{ .Chart.Name }}-permissionservice
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-permissionservice
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-permissionservice
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}-permissionservice
+        image: "{{ .Values.permissionservice.repository }}:{{ .Values.permissionservice.tag }}"
+        ports:
+        - containerPort: 7122  # REST port
+          name: http-rest
+        - containerPort: 7100  # gRPC port  
+          name: grpc
+        env:
+        {{- range $key, $value := .Values.env }}
+        - name: {{ $key }}
+          value: "{{ $value }}"
+        {{- end }}
+        - name: ASPNETCORE_URLS
+          value: "http://0.0.0.0:7122"
+        - name: ConnectionStrings__DefaultConnection
+          valueFrom:
+            secretKeyRef:
+              name: azure-kv-secrets-sync
+              key: ConnectionStrings__DefaultConnection
+        volumeMounts:
+        - name: secrets-store
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: {{ .Values.keyVault.secretProviderClass }}
