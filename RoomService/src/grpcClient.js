@@ -40,7 +40,7 @@ export async function checkPermissionFromUrl(url) {
     const room = parts[0];
     const token = parts[1];
 
-    //console.log("Checking for perms.");
+    console.log("Checking for perms.");
 
     if (!room || !token) {
       console.log("No token, or roomId");
@@ -51,7 +51,7 @@ export async function checkPermissionFromUrl(url) {
       client.CheckPermission({ token, room }, (err, response) => {
         if (err || !response || response.role === "None") {
           // Reject connection
-          //console.log(token, err);
+          console.log(token, err);
           return resolve(null);
         }
         resolve(response);
