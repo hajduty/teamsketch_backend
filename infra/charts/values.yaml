@@ -12,6 +12,10 @@ replicaCount: 1
 keyVault:
   secretProviderClass: "azure-kv-secrets"
 
+secretProvider:
+  tenantId: ""
+  userAssignedIdentityID: ""
+
 redis:
   image: "redis:alpine"
   containerPort: 6379
