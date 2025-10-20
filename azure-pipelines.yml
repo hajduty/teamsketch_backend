@@ -100,17 +100,15 @@ stages:
               kubernetesServiceEndpoint: 'k8sTeamSketch-conn'
               command: 'login'
           
-          - bash: |
-              helm upgrade --install teamsketch ./infra/charts \
-                --namespace teamsketch \
-                --create-namespace \
-                --set authservice.tag=$(tag) \
-                --set permissionservice.tag=$(tag) \
-                --set roomservice.tag=$(tag) \
-                --set userservice.tag=$(tag) \
-                --set secretProvider.tenantId=$(tenantId) \
-                --set secretProvider.userAssignedIdentityID=$(userAssignedIdentityID) \
-                --wait \
+          - pwsh: |
+              helm upgrade --install teamsketch $(helmChartPath) `
+                --namespace teamsketch `
+                --create-namespace `
+                --set authservice.image.tag=$(tag) `
+                --set permissionservice.image.tag=$(tag) `
+                --set roomservice.image.tag=$(tag) `
+                --set userservice.image.tag=$(tag) `
+                --wait `
                 --timeout 10m
             displayName: 'Deploy with Helm'
             workingDirectory: '$(Build.SourcesDirectory)'
