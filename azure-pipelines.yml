@@ -108,6 +108,8 @@ stages:
                 --set permissionservice.tag=$(tag) `
                 --set roomservice.tag=$(tag) `
                 --set userservice.tag=$(tag) `
+                --set secretProvider.tenantId=$(tenantId) `
+                --set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) `
                 --wait `
                 --timeout 10m
             displayName: 'Deploy with Helm'
