@@ -1,0 +1,124 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+pr: none
+
+resources:
+- repo: self
+
+variables:
+  - group: 'TS-secrets'
+  - name: tag
+    value: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build and Push Images
+  jobs:
+  - job: BuildImages
+    displayName: Build Images
+    pool:
+      name: Default
+      demands:
+        - docker
+    strategy:
+      matrix:
+        authservice:
+          dockerfile: 'AuthService/Dockerfile'
+          serviceName: 'authservice'
+        permissionservice:
+          dockerfile: 'PermissionService/Dockerfile'
+          serviceName: 'permissionservice'
+        roomservice:
+          dockerfile: 'RoomService/Dockerfile'
+          serviceName: 'roomservice'
+        userservice:
+          dockerfile: 'UserService/Dockerfile'
+          serviceName: 'userservice'
+    steps:
+    - task: Docker@2
+      displayName: Build & Push $(Build.Repository.Name) image
+      inputs:
+        containerRegistry: 'k8sTeamSketch'
+        command: buildAndPush
+        repository: 'hajduty/$(serviceName)'
+        dockerfile: '$(Build.SourcesDirectory)/$(dockerfile)'
+        buildContext: '$(Build.SourcesDirectory)'
+        tags: '$(tag)'
+
+- stage: Migration
+  displayName: 'Run Database Migrations'
+  dependsOn: Build
+  jobs:
+  - job: MigrationJob
+    displayName: 'Execute EF Core Migrations'
+    pool:
+      name: Default
+      demands:
+        - docker
+    steps:
+    - checkout: self
+    - script: |
+        echo "Starting DB Migrations..."
+
+        dotnet tool install --global dotnet-ef
+        dotnet ef database update --project UserService/UserService.Infrastructure --startup-project UserService/UserService.Grpc --connection "$(dbConnectionString)"
+        dotnet ef database update --project PermissionService/PermissionService.Infrastructure --startup-project PermissionService/PermissionService.API --connection "$(dbConnectionString)"
+        
+        echo "DB Migrations completed."
+      displayName: 'Execute EF Core Migrations'
+      workingDirectory: '$(Build.SourcesDirectory)'
+
+- stage: Deploy
+  displayName: 'Deploy to AKS'
+  dependsOn: Migration
+  jobs:
+  - deployment: DeployToAKS
+    displayName: 'Deploy using Helm'
+    pool:
+      name: Default
+      demands:
+        - docker
+    environment: 'production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          
+          - task: HelmInstaller@1
+            displayName: 'Install Helm'
+            inputs:
+              helmVersionToInstall: 'latest'
+          
+          - task: Kubernetes@1
+            displayName: 'Configure kubectl'
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'k8sTeamSketch-conn'
+              command: 'login'
+          
+          - powershell: |
+              helm upgrade --install teamsketch $(helmChartPath) `
+                --namespace teamsketch `
+                --create-namespace `
+                --set authservice.tag=$(tag) `
+                --set permissionservice.tag=$(tag) `
+                --set roomservice.tag=$(tag) `
+                --set userservice.tag=$(tag) `
+                --set secretProvider.tenantId=$(tenantId) `
+                --set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) `
+                --wait `
+                --timeout 10m
+            displayName: 'Deploy with Helm'
+            workingDirectory: '$(Build.SourcesDirectory)'
+          
+          - script: |
+              kubectl rollout status deployment/teamsketch-authservice -n teamsketch
+              kubectl rollout status deployment/teamsketch-permissionservice -n teamsketch
+              kubectl rollout status deployment/teamsketch-roomservice -n teamsketch
+              kubectl rollout status deployment/teamsketch-userservice -n teamsketch
+            displayName: 'Verify Deployment'

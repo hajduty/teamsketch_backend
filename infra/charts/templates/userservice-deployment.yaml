@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-userservice
+  labels:
+    app: {{ .Chart.Name }}-userservice
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-userservice
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-userservice
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.userservice.repository }}:{{ .Values.userservice.tag }}"
+        ports:
+          - containerPort: {{ .Values.userservice.containerPort }}
+        env:
+        - name: ConnectionStrings__DefaultConnection
+          valueFrom:
+            secretKeyRef:
+              name: azure-kv-secrets-sync
+              key: ConnectionStrings__DefaultConnection
+        volumeMounts:
+        - name: secrets-store
+          mountPath: "/mnt/secrets-store"
+          readOnly: true
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: {{ .Values.keyVault.secretProviderClass }}

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Chart.Name }}-permissionservice
+  labels:
+    app: {{ .Chart.Name }}-permissionservice
+spec:
+  selector:
+    app: {{ .Chart.Name }}-permissionservice
+  ports:
+  - name: grpc
+    port: 7122
+    targetPort: 7122
+    protocol: TCP
+  - name: http-rest
+    port: 7100
+    targetPort: 7100
+    protocol: TCP
+  type: ClusterIP

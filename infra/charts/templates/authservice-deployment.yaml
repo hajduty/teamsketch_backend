@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-authservice
+  labels:
+    app: {{ .Chart.Name }}-authservice
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-authservice
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-authservice
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}-authservice
+        image: "{{ .Values.authservice.repository }}:{{ .Values.authservice.tag }}"
+        ports:
+          - containerPort: {{ .Values.authservice.containerPort }}
+        env:
+        {{- range $key, $value := .Values.env }}
+        - name: {{ $key }}
+          value: "{{ $value }}"
+        {{- end }}

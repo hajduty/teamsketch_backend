@@ -1,0 +1,83 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Chart.Name }}-ingress
+  labels:
+    app: {{ .Chart.Name }}-ingress
+  annotations:
+    #nginx.ingress.kubernetes.io/rewrite-target: /$2
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/websocket-services: "{{ .Chart.Name }}-roomservice"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - aks-teamsketch.hajder.app
+    secretName: {{ .Chart.Name }}-tls-cert
+  rules:
+  - host: aks-teamsketch.hajder.app
+    http:
+      paths:
+      - path: /api/auth
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Chart.Name }}-authservice
+            port:
+              number: 8080
+
+      - path: /.well-known/jwks.json
+        pathType: Exact
+        backend:
+          service:
+            name: {{ .Chart.Name }}-authservice
+            port:
+              number: 8080
+
+      - path: /api/permission
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Chart.Name }}-permissionservice
+            port:
+              name: http-rest
+
+      - path: /api/permissionshub
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Chart.Name }}-permissionservice
+            port:
+              name: http-rest
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Chart.Name }}-room-ingress
+  labels:
+    app: {{ .Chart.Name }}-room-ingress
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/websocket-services: "{{ .Chart.Name }}-roomservice"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - aks-teamsketch.hajder.app
+    secretName: {{ .Chart.Name }}-room-tls-cert
+  rules:
+  - host: aks-teamsketch.hajder.app
+    http:
+      paths:
+        - path: /api/rooms(/|$)(.*)
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: {{ .Chart.Name }}-roomservice
+              port:
+                number: 8080
