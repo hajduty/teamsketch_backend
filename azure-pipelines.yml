@@ -70,3 +70,52 @@ stages:
         echo "DB Migrations completed."
       displayName: 'Execute EF Core Migrations'
       workingDirectory: '$(Build.SourcesDirectory)'
+
+- stage: Deploy
+  displayName: 'Deploy to AKS'
+  dependsOn: Migration
+  jobs:
+  - deployment: DeployToAKS
+    displayName: 'Deploy using Helm'
+    pool:
+      name: Default
+      demands:
+        - docker
+    environment: 'production'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+          
+          - task: HelmInstaller@1
+            displayName: 'Install Helm'
+            inputs:
+              helmVersionToInstall: 'latest'
+          
+          - task: Kubernetes@1
+            displayName: 'Configure kubectl'
+            inputs:
+              connectionType: 'Kubernetes Service Connection'
+              kubernetesServiceEndpoint: 'k8sTeamSketch-conn'
+              command: 'login'
+          
+          - powershell: |
+              helm upgrade --install teamsketch $(helmChartPath) `
+                --namespace teamsketch `
+                --create-namespace `
+                --set authservice.image.tag=$(tag) `
+                --set permissionservice.image.tag=$(tag) `
+                --set roomservice.image.tag=$(tag) `
+                --set userservice.image.tag=$(tag) `
+                --wait `
+                --timeout 10m
+            displayName: 'Deploy with Helm'
+            workingDirectory: '$(Build.SourcesDirectory)'
+          
+          - script: |
+              kubectl rollout status deployment/teamsketch-authservice -n teamsketch
+              kubectl rollout status deployment/teamsketch-permissionservice -n teamsketch
+              kubectl rollout status deployment/teamsketch-roomservice -n teamsketch
+              kubectl rollout status deployment/teamsketch-userservice -n teamsketch
+            displayName: 'Verify Deployment'
