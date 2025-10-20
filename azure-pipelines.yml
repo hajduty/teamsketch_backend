@@ -100,7 +100,7 @@ stages:
               kubernetesServiceEndpoint: 'k8sTeamSketch-conn'
               command: 'login'
           
-          - pwsh: |
+          - powershell: |
               helm upgrade --install teamsketch $(helmChartPath) `
                 --namespace teamsketch `
                 --create-namespace `
