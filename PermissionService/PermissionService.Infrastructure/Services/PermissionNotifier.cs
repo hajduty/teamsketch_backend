@@ -20,13 +20,13 @@ namespace PermissionService.Infrastructure.Services
         public async Task NotifyPermissionChanged(string userId, string roomId, string role)
         {
             await _hubContext.Clients.User(userId)
-                .SendAsync("PermissionChanged", new { RoomId = roomId, Role = role });
+                .SendAsync("PermissionChanged", new { Room = roomId, Role = role });
         }
 
         public async Task NotifyPermissionAdded(string userId, string roomId, string role)
         {
             await _hubContext.Clients.User(userId)
-                .SendAsync("PermissionAdded", new { RoomId = roomId, Role = role });
+                .SendAsync("PermissionAdded", new { Room = roomId, Role = role });
         }
     }
 }
