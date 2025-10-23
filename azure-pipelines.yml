@@ -101,9 +101,12 @@ stages:
               command: 'login'
           
           - script: |
-              echo "env:" > conn-override.yaml
-              echo "  ConnectionStrings__DefaultConnection: $(dbConnectionString)" >> conn-override.yaml
-              
+              $connectionString = "$(dbConnectionString)"
+              @"
+              env:
+                ConnectionStrings__DefaultConnection: "$connectionString"
+              "@ | Out-File -FilePath "conn-override.yaml" -Encoding utf8
+
               helm upgrade --install teamsketch $(helmChartPath) ^
                 --namespace teamsketch ^
                 --create-namespace ^
