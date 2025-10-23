@@ -4,7 +4,6 @@
 
 trigger:
 - main
-pr: none
 
 resources:
 - repo: self
@@ -111,6 +110,7 @@ stages:
                 --set userservice.tag=$(tag) `
                 --set secretProvider.tenantId=$(tenantId) `
                 --set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) `
+                --set env.ConnectionStrings__DefaultConnection=$(dbConnectionString) `
                 --wait `
                 --timeout 10m
             displayName: 'Deploy with Helm'
