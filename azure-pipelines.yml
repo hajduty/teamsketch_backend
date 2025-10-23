@@ -4,6 +4,7 @@
 
 trigger:
 - main
+pr: none
 
 resources:
 - repo: self
@@ -106,7 +107,7 @@ stages:
               env:
                 ConnectionStrings__DefaultConnection: "$dbConnectionString"
               "@ | Out-File -FilePath "conn-override.yaml" -Encoding utf8
-          
+
               helm upgrade --install teamsketch $(helmChartPath) `
                 --namespace teamsketch `
                 --create-namespace `
