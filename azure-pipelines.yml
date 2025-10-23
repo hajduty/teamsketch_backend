@@ -101,23 +101,21 @@ stages:
               command: 'login'
           
           - powershell: |
-              $helmCommand = "helm upgrade --install teamsketch $(helmChartPath) " +
-                "--namespace teamsketch " +
-                "--create-namespace " +
-                "--set authservice.tag=$(tag) " +
-                "--set permissionservice.tag=$(tag) " +
-                "--set roomservice.tag=$(tag) " +
-                "--set userservice.tag=$(tag) " +
-                "--set secretProvider.tenantId=$(tenantId) " +
-                "--set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) " +
-                "--set-string env.ConnectionStrings__DefaultConnection=$(dbConnectionString) " +
-                "--wait " +
-                "--timeout 10m"
-              
-              Invoke-Expression $helmCommand
+              helm upgrade --install teamsketch $(helmChartPath) `
+                --namespace teamsketch `
+                --create-namespace `
+                --set authservice.tag=$(tag) `
+                --set permissionservice.tag=$(tag) `
+                --set roomservice.tag=$(tag) `
+                --set userservice.tag=$(tag) `
+                --set secretProvider.tenantId=$(tenantId) `
+                --set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) `
+                --set-string "env.ConnectionStrings__DefaultConnection=$(dbConnectionString)" `
+                --wait `
+                --timeout 10m
             displayName: 'Deploy with Helm'
             workingDirectory: '$(Build.SourcesDirectory)'
-          
+
           - script: |
               kubectl rollout status deployment/teamsketch-authservice -n teamsketch
               kubectl rollout status deployment/teamsketch-permissionservice -n teamsketch
