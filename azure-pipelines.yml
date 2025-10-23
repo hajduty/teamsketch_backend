@@ -110,7 +110,7 @@ stages:
                 "--set userservice.tag=$(tag) " +
                 "--set secretProvider.tenantId=$(tenantId) " +
                 "--set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) " +
-                "--set env.ConnectionStrings__DefaultConnection=$(dbConnectionString) " +
+                "--set ""env.ConnectionStrings__DefaultConnection=$(dbConnectionString)"" " +
                 "--wait " +
                 "--timeout 10m"
               
