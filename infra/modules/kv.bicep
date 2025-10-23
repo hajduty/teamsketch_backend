@@ -1,4 +1,4 @@
-param location string = 'centralindia'
+/* param location string = 'centralindia'
 param keyVaultName string = 'ts-keyvault-3299'
 param kubeletIdentityObjectId string
 
@@ -44,3 +44,4 @@ resource sqlConn 'Microsoft.KeyVault/vaults/secrets@2023-07-01' = {
   name: 'sql-connection'
   properties: { value: sqlConnection }
 }
+ */

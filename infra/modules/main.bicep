@@ -27,13 +27,13 @@ module aks 'aks.bicep' = {
   }
 }
 
-module aksCsi 'aks-csi.bicep' = {
+/* module aksCsi 'aks-csi.bicep' = {
   name: 'aksCsiModule'
   params: {
     aksName: aksName
     rgName: rgName
   }
-}
+} */
 
 module roleAssign 'roleassign.bicep' = {
   name: 'roleAssignmentModule'
@@ -54,7 +54,7 @@ module sql 'sql.bicep' = {
   }
 }
 
-module kvModule 'kv.bicep' = {
+/* module kvModule 'kv.bicep' = {
   name: 'kvDeployment'
   scope: resourceGroup(rgName)
   params: {
@@ -65,3 +65,4 @@ module kvModule 'kv.bicep' = {
     sqlConnection: 'Server=tcp:${sql.outputs.sqlServerFqdn},1433;Database=${sql.outputs.databaseName};User ID=${sqlAdminUsername};Password=${sqlPassword};Encrypt=true;TrustServerCertificate=false;Connection Timeout=30;'
   }
 }
+ */

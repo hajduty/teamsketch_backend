@@ -18,9 +18,9 @@ spec:
       - name: {{ .Chart.Name }}-permissionservice
         image: "{{ .Values.permissionservice.repository }}:{{ .Values.permissionservice.tag }}"
         ports:
-        - containerPort: 7122  # REST port
+        - containerPort: 7122
           name: http-rest
-        - containerPort: 7100  # gRPC port  
+        - containerPort: 7100
           name: grpc
         env:
         {{- range $key, $value := .Values.env }}
@@ -30,18 +30,4 @@ spec:
         - name: ASPNETCORE_URLS
           value: "http://0.0.0.0:7122"
         - name: ConnectionStrings__DefaultConnection
-          valueFrom:
-            secretKeyRef:
-              name: azure-kv-secrets-sync
-              key: ConnectionStrings__DefaultConnection
-        volumeMounts:
-        - name: secrets-store
-          mountPath: "/mnt/secrets-store"
-          readOnly: true
-      volumes:
-      - name: secrets-store
-        csi:
-          driver: secrets-store.csi.k8s.io
-          readOnly: true
-          volumeAttributes:
-            secretProviderClass: {{ .Values.keyVault.secretProviderClass }}
+          value: {{ .Values.env.ConnectionStrings__DefaultConnection }}
