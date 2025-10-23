@@ -100,18 +100,18 @@ stages:
               kubernetesServiceEndpoint: 'k8sTeamSketch-conn'
               command: 'login'
           
-          - powershell: |
-              helm upgrade --install teamsketch $(helmChartPath) `
-                --namespace teamsketch `
-                --create-namespace `
-                --set authservice.tag=$(tag) `
-                --set permissionservice.tag=$(tag) `
-                --set roomservice.tag=$(tag) `
-                --set userservice.tag=$(tag) `
-                --set secretProvider.tenantId=$(tenantId) `
-                --set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) `
-                --set-string "env.ConnectionStrings__DefaultConnection=$(dbConnectionString)" `
-                --wait `
+          - script: |
+              helm upgrade --install teamsketch $(helmChartPath) ^
+                --namespace teamsketch ^
+                --create-namespace ^
+                --set authservice.tag=$(tag) ^
+                --set permissionservice.tag=$(tag) ^
+                --set roomservice.tag=$(tag) ^
+                --set userservice.tag=$(tag) ^
+                --set secretProvider.tenantId=$(tenantId) ^
+                --set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) ^
+                --set-string "env.ConnectionStrings__DefaultConnection=$(dbConnectionString)" ^
+                --wait ^
                 --timeout 10m
             displayName: 'Deploy with Helm'
             workingDirectory: '$(Build.SourcesDirectory)'
