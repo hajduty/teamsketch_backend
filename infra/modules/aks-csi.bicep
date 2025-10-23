@@ -1,4 +1,4 @@
-param aksName string
+/* param aksName string
 param rgName string
 
 resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' existing = {
@@ -7,3 +7,4 @@ resource aks 'Microsoft.ContainerService/managedClusters@2024-02-01' existing = 
 }
 
 output kubeletIdentityObjectId string = aks.properties.identityProfile.kubeletidentity.objectId
+ */

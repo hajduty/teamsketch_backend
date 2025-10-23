@@ -2,19 +2,13 @@ env:
   UserServiceURL: "http://teamsketch-userservice:8080"
   AuthServiceURL: "http://teamsketch-authservice:8080"
   ConnectionStrings__RedisConnectionString: "teamsketch-redis:6379,abortConnect=false"
+  ConnectionStrings__DefaultConnection: ""
   PERMISSION_SERVICE_URL: "teamsketch-permissionservice:7122"
   REDIS_URL: "teamsketch-redis:6379"
   PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
   PORT: 8080
 
 replicaCount: 1
-
-keyVault:
-  secretProviderClass: "azure-kv-secrets"
-
-secretProvider:
-  tenantId: ""
-  userAssignedIdentityID: ""
 
 redis:
   image: "redis:alpine"
