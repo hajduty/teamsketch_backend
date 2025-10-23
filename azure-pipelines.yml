@@ -101,6 +101,9 @@ stages:
               command: 'login'
           
           - script: |
+              echo "env:" > conn-override.yaml
+              echo "  ConnectionStrings__DefaultConnection: $(dbConnectionString)" >> conn-override.yaml
+              
               helm upgrade --install teamsketch $(helmChartPath) ^
                 --namespace teamsketch ^
                 --create-namespace ^
@@ -110,7 +113,7 @@ stages:
                 --set userservice.tag=$(tag) ^
                 --set secretProvider.tenantId=$(tenantId) ^
                 --set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) ^
-                --set-string "env.ConnectionStrings__DefaultConnection=$(dbConnectionString)" ^
+                --values conn-override.yaml ^
                 --wait ^
                 --timeout 10m
             displayName: 'Deploy with Helm'
