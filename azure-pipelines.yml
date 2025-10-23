@@ -100,24 +100,24 @@ stages:
               kubernetesServiceEndpoint: 'k8sTeamSketch-conn'
               command: 'login'
           
-          - script: |
-              $connectionString = "$(dbConnectionString)"
+          - powershell: |
+              $dbConnectionString = "$(dbConnectionString)"
               @"
               env:
-                ConnectionStrings__DefaultConnection: "$connectionString"
+                ConnectionStrings__DefaultConnection: "$dbConnectionString"
               "@ | Out-File -FilePath "conn-override.yaml" -Encoding utf8
-
-              helm upgrade --install teamsketch $(helmChartPath) ^
-                --namespace teamsketch ^
-                --create-namespace ^
-                --set authservice.tag=$(tag) ^
-                --set permissionservice.tag=$(tag) ^
-                --set roomservice.tag=$(tag) ^
-                --set userservice.tag=$(tag) ^
-                --set secretProvider.tenantId=$(tenantId) ^
-                --set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) ^
-                --values conn-override.yaml ^
-                --wait ^
+          
+              helm upgrade --install teamsketch $(helmChartPath) `
+                --namespace teamsketch `
+                --create-namespace `
+                --set authservice.tag=$(tag) `
+                --set permissionservice.tag=$(tag) `
+                --set roomservice.tag=$(tag) `
+                --set userservice.tag=$(tag) `
+                --set secretProvider.tenantId=$(tenantId) `
+                --set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) `
+                --values conn-override.yaml `
+                --wait `
                 --timeout 10m
             displayName: 'Deploy with Helm'
             workingDirectory: '$(Build.SourcesDirectory)'
