@@ -51,7 +51,7 @@ namespace PermissionService.API
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuer = true,
-                        ValidIssuer = "teamsketch", // must match the issuer in your JWT
+                        ValidIssuer = "https://aks-teamsketch.hajder.app", // must match the issuer in your JWT
                         ValidateAudience = true,
                         ValidAudience = "teamsketch_user", // your API audience
                         ValidateLifetime = true,
