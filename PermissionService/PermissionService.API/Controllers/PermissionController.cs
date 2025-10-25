@@ -95,7 +95,15 @@ namespace PermissionService.API.Controllers
         {
             var currentUserId = GetCurrentUserId();
 
-            var result = await permService.RemovePermissionFromUser(userId, roomId, currentUserId);
+            bool result;
+
+            if (currentUserId == userId)
+            {
+                result = await permService.RemoveOwnPermission(userId, roomId);
+            } else
+            {
+                result = await permService.RemovePermissionFromUser(userId, roomId, currentUserId);
+            }
 
             if (result == false)
             {
