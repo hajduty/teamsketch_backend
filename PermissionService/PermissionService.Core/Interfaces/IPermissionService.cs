@@ -16,5 +16,6 @@ namespace PermissionService.Core.Interfaces
         Task<Permission> AddUserPermission(Permission perm, string currentUserId);
         Task<Permission> UpdateUserPermission(Permission newPerm, string currentUserId);
         Task<List<Permission>> GetPermissionsForRoom(string roomId, string currentUserId);
+        Task<bool> RemoveOwnPermission(string currentUserId, string roomId);
     }
 }

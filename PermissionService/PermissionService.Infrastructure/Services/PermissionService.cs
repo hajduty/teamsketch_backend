@@ -89,6 +89,23 @@ namespace PermissionService.Infrastructure.Services
             return permission;
         }
 
+        public async Task<bool> RemoveOwnPermission(string currentUserId, string roomId)
+        {
+            var userPermission = await permRepo.GetUserPermissionAsync(currentUserId, roomId);
+
+            if (userPermission == null) throw new UnauthorizedAccessException("User is not in this room");
+
+            var result = await permRepo.RemoveUserPermissionAsync(currentUserId, roomId);
+
+            if (result == false)
+                throw new InvalidOperationException("Failed to remove permission.");
+
+            await redisPublisher.PublishKickRequestAsync(currentUserId, roomId, "Permission changed");
+            _ = notifier.NotifyPermissionChanged(currentUserId, roomId, "None");
+
+            return result;
+        }
+
         public async Task<bool> RemovePermissionFromUser(string userId, string roomId, string requestUserId)
         {
             var userPermission = await permRepo.GetUserPermissionAsync(requestUserId, roomId);
