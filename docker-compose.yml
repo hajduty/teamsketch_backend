@@ -11,6 +11,21 @@ services:
       - "1433:1433"
     networks:
       - app-network
+      
+  sql-init:
+    image: mcr.microsoft.com/mssql-tools
+    depends_on:
+      - sqlserver
+    networks:
+      - app-network
+    entrypoint: /bin/bash -c "
+      sleep 20 &&
+      /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P 'YourStrong(!)Password' -d master -i /scripts/create_database.sql &&
+      sleep 5 &&
+      /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P 'YourStrong(!)Password' -d TS -i /scripts/create_tables.sql
+      "
+    volumes:
+      - ./E2E.Tests:/scripts
 
   redis:
     image: 'redis:alpine'
@@ -34,7 +49,7 @@ services:
       - "7154:8080"
     depends_on:
       - userservice
-      - sqlserver
+      - sql-init
     networks:
       app-network:
         aliases:
@@ -93,7 +108,7 @@ services:
     ports:
       - "8082:8080"
     depends_on:
-      - sqlserver
+      - sql-init
     networks:
       app-network:
         aliases:
