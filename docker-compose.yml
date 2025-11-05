@@ -17,6 +17,19 @@ services:
     networks:
       - app-network
 
+  sql-init:
+    image: mysql:8.1
+    depends_on:
+      - mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: YourStrong(!)Password
+    volumes:
+      - ./sql-scripts:/scripts:ro
+      - ./sql-init.sh:/sql-init.sh:ro
+    entrypoint: ["/bin/bash", "/sql-init.sh"]
+    networks:
+      - app-network
+
   redis:
     image: 'redis:alpine'
     container_name: redis

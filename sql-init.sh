@@ -1,0 +1,1 @@
+#!/bin/bashset -e# Wait for MySQL to be readyuntil mysqladmin ping -h mysql -u root -p"$MYSQL_ROOT_PASSWORD" --silent; do  echo "Waiting for MySQL..."  sleep 2doneecho "Running SQL init scripts..."for f in /scripts/*.sql; do  echo "Applying $f"  mysql -h mysql -u root -p"$MYSQL_ROOT_PASSWORD" TS < "$f"done
