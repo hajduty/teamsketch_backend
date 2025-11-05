@@ -7,6 +7,7 @@ using PermissionService.Infrastructure.Data;
 using PermissionService.Infrastructure.Repositories;
 using PermissionService.Infrastructure.Services;
 using StackExchange.Redis;
+using Pomelo.EntityFrameworkCore.MySql;
 
 namespace PermissionService.Infrastructure;
 
@@ -22,8 +23,9 @@ public static class DependencyInjection
 
         if (!services.Any(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>)))
         {
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<AppDbContext>(options => 
+            options.UseMySql(config.GetConnectionString("DefaultConnection"), ServerVersion.Create(new Version(8, 0, 27), Pomelo.EntityFrameworkCore.MySql.Infrastructure.ServerType.MySql)));
+
         }
 
         services.AddGrpcClient<UserService.Grpc.User.UserClient>(o =>

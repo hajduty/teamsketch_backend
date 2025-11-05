@@ -1,31 +1,21 @@
 version: '3.9'
 
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: sqlserver
+  mysql:
+    image: mysql:8.1
+    container_name: mysql
     environment:
-      SA_PASSWORD: "YourStrong(!)Password"
-      ACCEPT_EULA: "Y"
+      MYSQL_ROOT_PASSWORD: YourStrong(!)Password
+      MYSQL_DATABASE: TS
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: AppPassword123
     ports:
-      - "1433:1433"
-    networks:
-      - app-network
-      
-  sql-init:
-    image: mcr.microsoft.com/mssql-tools
-    depends_on:
-      - sqlserver
-    networks:
-      - app-network
-    entrypoint: /bin/bash -c "
-      sleep 20 &&
-      /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P 'YourStrong(!)Password' -d master -i /scripts/create_database.sql &&
-      sleep 5 &&
-      /opt/mssql-tools/bin/sqlcmd -S sqlserver -U sa -P 'YourStrong(!)Password' -d TS -i /scripts/create_tables.sql
-      "
+      - "3316:3306"
     volumes:
-      - ./E2E.Tests:/scripts
+      - mysql_data:/var/lib/mysql
+      - ./sql-scripts:/docker-entrypoint-initdb.d
+    networks:
+      - app-network
 
   redis:
     image: 'redis:alpine'
@@ -43,13 +33,13 @@ services:
       dockerfile: AuthService/Dockerfile
     container_name: authservice
     environment:
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Server=mysql;Database=TS;User Id=appuser;Password=AppPassword123;"
       UserServiceURL: "http://userservice:8080"
     ports:
       - "7154:8080"
     depends_on:
       - userservice
-      - sql-init
+      - mysql
     networks:
       app-network:
         aliases:
@@ -63,7 +53,7 @@ services:
     environment:
       AuthServiceURL: "http://authservice:8080"
       UserServiceURL: "http://userservice:8080"
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Server=mysql;Database=TS;User Id=appuser;Password=AppPassword123;"
       ConnectionStrings__RedisConnectionString: "redis:6379,abortConnect=false"
       ASPNETCORE_URLS: "http://0.0.0.0:7122"
     ports:
@@ -83,7 +73,7 @@ services:
       dockerfile: RoomService/Dockerfile
     container_name: roomservice
     environment:
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Server=mysql;Database=TS;User Id=appuser;Password=AppPassword123;"
       PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
       #CERT_PATH: "Shared/Certs/server.crt"
       REDIS_URL: "redis:6379"
@@ -104,11 +94,11 @@ services:
       dockerfile: UserService/Dockerfile
     container_name: userservice
     environment:
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Server=mysql;Database=TS;User Id=appuser;Password=AppPassword123;"
     ports:
       - "8082:8080"
     depends_on:
-      - sql-init
+      - mysql
     networks:
       app-network:
         aliases:
@@ -117,3 +107,6 @@ services:
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  mysql_data:
