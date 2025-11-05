@@ -4,14 +4,15 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
+# Build stage
+FROM mcr.microsoft.com/dotnet/sdk:9.0.305-bookworm-slim AS build
+
 # Install protobuf compiler
 RUN apt-get update && \
     apt-get install -y --no-install-recommends protobuf-compiler && \
     rm -rf /var/lib/apt/lists/*
 ENV PROTOBUF_PROTOC=/usr/bin/protoc
 
-# Build stage
-FROM mcr.microsoft.com/dotnet/sdk:9.0.305-bookworm-slim AS build
 WORKDIR /src
 
 # Copy API + other projects that belong to this service
