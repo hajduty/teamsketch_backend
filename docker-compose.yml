@@ -1,35 +1,6 @@
 version: '3.9'
 
 services:
-  mysql:
-    image: mysql:8.1
-    container_name: mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: YourStrong(!)Password
-      MYSQL_DATABASE: TS
-      MYSQL_USER: appuser
-      MYSQL_PASSWORD: AppPassword123
-    ports:
-      - "3316:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./sql-scripts:/docker-entrypoint-initdb.d
-    networks:
-      - app-network
-
-  sql-init:
-    image: mysql:8.1
-    depends_on:
-      - mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: YourStrong(!)Password
-    volumes:
-      - ./sql-scripts:/scripts:ro
-      - ./sql-init.sh:/sql-init.sh:ro
-    entrypoint: ["/bin/bash", "/sql-init.sh"]
-    networks:
-      - app-network
-
   redis:
     image: 'redis:alpine'
     container_name: redis
@@ -52,7 +23,6 @@ services:
       - "7154:8080"
     depends_on:
       - userservice
-      - mysql
     networks:
       app-network:
         aliases:
@@ -110,8 +80,6 @@ services:
       ConnectionStrings__DefaultConnection: "Server=mysql;Database=TS;User Id=appuser;Password=AppPassword123;"
     ports:
       - "8082:8080"
-    depends_on:
-      - mysql
     networks:
       app-network:
         aliases:
