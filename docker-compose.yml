@@ -6,10 +6,6 @@ services:
     container_name: redis
     ports:
       - '6379:6379'
-    networks:
-      app-network:
-        aliases:
-          - redis
 
   authservice:
     build:
@@ -22,10 +18,6 @@ services:
       - "7154:8080"
     depends_on:
       - userservice
-    networks:
-      app-network:
-        aliases:
-          - authservice
 
   permissionservice:
     build:
@@ -43,10 +35,6 @@ services:
     depends_on:
       - authservice
       - userservice
-    networks:
-      app-network:
-        aliases:
-          - permissionservice
 
   roomservice:
     build:
@@ -63,10 +51,6 @@ services:
     depends_on:
       - permissionservice
       - redis
-    networks:
-      app-network:
-        aliases:
-          - roomservice
 
   userservice:
     build:
@@ -75,14 +59,6 @@ services:
     container_name: userservice
     ports:
       - "8082:8080"
-    networks:
-      app-network:
-        aliases:
-          - userservice
-
-networks:
-  app-network:
-    driver: bridge
 
 volumes:
   mysql_data:
