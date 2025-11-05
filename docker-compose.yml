@@ -17,7 +17,6 @@ services:
       dockerfile: AuthService/Dockerfile
     container_name: authservice
     environment:
-      ConnectionStrings__DefaultConnection: "Server=mysql;Database=TS;User Id=appuser;Password=AppPassword123;"
       UserServiceURL: "http://userservice:8080"
     ports:
       - "7154:8080"
@@ -36,7 +35,6 @@ services:
     environment:
       AuthServiceURL: "http://authservice:8080"
       UserServiceURL: "http://userservice:8080"
-      ConnectionStrings__DefaultConnection: "Server=mysql;Database=TS;User Id=appuser;Password=AppPassword123;"
       ConnectionStrings__RedisConnectionString: "redis:6379,abortConnect=false"
       ASPNETCORE_URLS: "http://0.0.0.0:7122"
     ports:
@@ -56,7 +54,6 @@ services:
       dockerfile: RoomService/Dockerfile
     container_name: roomservice
     environment:
-      ConnectionStrings__DefaultConnection: "Server=mysql;Database=TS;User Id=appuser;Password=AppPassword123;"
       PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
       #CERT_PATH: "Shared/Certs/server.crt"
       REDIS_URL: "redis:6379"
@@ -77,7 +74,6 @@ services:
       dockerfile: UserService/Dockerfile
     container_name: userservice
     environment:
-      ConnectionStrings__DefaultConnection: "Server=mysql;Database=TS;User Id=appuser;Password=AppPassword123;"
     ports:
       - "8082:8080"
     networks:
