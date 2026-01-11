@@ -1,13 +1,13 @@
 import * as Y from 'yjs'
-import * as syncProtocol from '@y/protocols/sync'
-import * as awarenessProtocol from '@y/protocols/awareness'
+import * as syncProtocol from '@y/protocols/sync.js'
+import * as awarenessProtocol from '@y/protocols/awareness.js'
 
-import * as encoding from 'lib0/encoding'
-import * as decoding from 'lib0/decoding'
+import * as encoding from 'lib0/encoding.js'
+import * as decoding from 'lib0/decoding.js'
 // @ts-ignore
-import * as map from 'lib0/map'
+import * as map from 'lib0/map.js'
 
-import * as eventloop from 'lib0/eventloop'
+import * as eventloop from 'lib0/eventloop.js'
 
 import { callbackHandler, isCallbackSet } from './callback.js'
 

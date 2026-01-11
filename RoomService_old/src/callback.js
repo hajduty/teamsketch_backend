@@ -1,5 +1,5 @@
 import http from 'http'
-import * as number from 'lib0/number'
+import * as number from 'lib0/number.js'
 
 const CALLBACK_URL = process.env.CALLBACK_URL ? new URL(process.env.CALLBACK_URL) : null
 const CALLBACK_TIMEOUT = number.parseInt(process.env.CALLBACK_TIMEOUT || '5000')

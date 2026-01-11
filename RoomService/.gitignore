@@ -1,4 +1,8 @@
 dist
 node_modules
 tmp
-dbDir
+.env
+.env.save*
+.env.backup*
+.DS_Store
+.vscode

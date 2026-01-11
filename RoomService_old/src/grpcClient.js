@@ -1,7 +1,6 @@
 import grpc from "@grpc/grpc-js";
 import protoLoader from "@grpc/proto-loader";
 import dotenv from "dotenv";
-// @ts-ignore
 import fs from "fs";
 
 dotenv.config();
@@ -21,11 +20,11 @@ const packageDef = protoLoader.loadSync(protoPath, {
 //const rootCert = fs.readFileSync(certPath);
 //const creds = grpc.credentials.createSsl(rootCert);
 
-const creds = grpc.credentials.createInsecure();
-
 // Load package
 const grpcObj = grpc.loadPackageDefinition(packageDef);
 const permissionPackage = grpcObj.permission;
+
+const creds = grpc.credentials.createInsecure();
 
 // @ts-ignore
 const client = new permissionPackage.Permission(
@@ -35,12 +34,12 @@ const client = new permissionPackage.Permission(
 
 console.log(process.env.PERMISSION_SERVICE_URL);
 
-/**
- * @param {string} room
- * @param {string} token
- */
-export async function checkPermissionFromUrl(room, token) {
+export async function checkPermissionFromUrl(url) {
   try {
+    const parts = url.split("/").filter(Boolean);
+    const room = parts[0];
+    const token = parts[1];
+
     console.log("Checking for perms.");
 
     if (!room || !token) {
@@ -49,7 +48,6 @@ export async function checkPermissionFromUrl(room, token) {
      };
 
     return await new Promise((resolve) => {
-      // @ts-ignore
       client.CheckPermission({ token, room }, (err, response) => {
         if (err || !response || response.role === "None") {
           // Reject connection

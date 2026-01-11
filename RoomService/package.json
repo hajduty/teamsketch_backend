@@ -1,56 +1,70 @@
 {
-  "name": "@y/websocket-server",
-  "version": "0.1.1",
-  "description": "Backend for y-websocket",
-  "type": "module",
+  "name": "@y/redis",
+  "version": "0.1.6",
+  "description": "Scalable websocket provider for Yjs using redis",
   "sideEffects": false,
+  "type": "module",
   "funding": {
     "type": "GitHub Sponsors ❤",
     "url": "https://github.com/sponsors/dmonad"
   },
   "scripts": {
-    "start": "node ./src/server.js",
-    "dist": "rm -rf dist && rollup -c && tsc",
+    "dev": "concurrently -r 'npm run start:server' 'npm run start:worker' 'npm run minio' 'npm run redis' 'npm run postgres'",
+    "start:server": "node --env-file .env ./bin/server.js",
+    "debug:server": "node --env-file .env --inspect-brk ./bin/worker.js ./bin/server.js",
+    "start:worker": "node --env-file .env ./bin/worker.js",
+    "debug:worker": "node --env-file .env --inspect-brk ./bin/worker.js",
+    "minio": "docker run -p 9000:9000 -p 9001:9001 quay.io/minio/minio server /data --console-address \":9001\"",
+    "redis": "docker run -p 6379:6379 redis",
+    "postgres": "docker run -p 5432:5432 -e POSTGRES_USER=yredis -e POSTGRES_PASSWORD=yredis -e POSTGRES_DB=yredis postgres:16-alpine",
+    "dist": "tsc",
     "lint": "standard && tsc",
-    "test": "npm run lint",
-    "preversion": "npm run lint && npm run dist && test -e dist/src/server.d.ts && test -e dist/server.cjs"
+    "test": "node --env-file .env tests/index.js",
+    "test-inspect": "node --env-file .env --inspect-brk tests/index.js",
+    "preversion": "npm run lint && npm run dist",
+    "clean": "rm -rf **/dist "
   },
   "bin": {
-    "y-websocket-server": "src/server.js",
-    "y-websocket": "src/server.js"
+    "y-redis-server": "./bin/server.js",
+    "y-redis-worker": "./bin/worker.js"
   },
   "files": [
     "dist/*",
+    "bin/*",
     "src/*"
   ],
   "exports": {
     "./package.json": "./package.json",
-    "./utils": {
-      "import": "./src/utils.js",
-      "require": "./dist/utils.cjs",
-      "types": "./dist/src/utils.d.ts",
-      "default": "./src/utils.js"
+    ".": {
+      "default": "./src/index.js",
+      "types": "./dist/src/index.d.ts"
     },
-    "./callback": {
-      "import": "./src/callback.js",
-      "require": "./dist/callback.cjs",
-      "types": "./dist/src/callback.d.ts",
-      "default": "./src/callback.js"
+    "./storage/memory": {
+      "default": "./src/storage/memory.js",
+      "types": "./dist/src/storage/memory.d.ts"
+    },
+    "./storage/s3": {
+      "default": "./src/storage/s3.js",
+      "types": "./dist/src/storage/s3.d.ts"
+    },
+    "./storage/postgres": {
+      "default": "./src/storage/postgres.js",
+      "types": "./dist/src/storage/postgres.d.ts"
     }
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yjs/y-websocket-server.git"
+    "url": "git+https://github.com/yjs/y-redis.git"
   },
   "keywords": [
     "Yjs"
   ],
   "author": "Kevin Jahns <kevin.jahns@protonmail.com>",
-  "license": "MIT",
+  "license": "AGPL-3.0 OR PROPRIETARY",
   "bugs": {
-    "url": "https://github.com/yjs/y-websocket-server/issues"
+    "url": "https://github.com/yjs/y-redis/issues"
   },
-  "homepage": "https://github.com/yjs/y-websocket-server#readme",
+  "homepage": "https://github.com/yjs/y-redis#readme",
   "standard": {
     "ignore": [
       "/dist",
@@ -60,26 +74,29 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.14.0",
     "@grpc/proto-loader": "^0.8.0",
-    "@y/protocols": "^1.0.6-1",
     "dotenv": "^17.2.2",
     "ioredis": "^5.8.0",
-    "lib0": "^0.2.102",
-    "ws": "^6.2.1",
-    "y-leveldb": "^0.2.0",
-    "yjs": "^14.0.0-7"
+    "lib0": "^0.2.93",
+    "redis": "^4.6.12",
+    "uws": "github:uNetworking/uWebSockets.js#v20.56.0",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.5.6"
   },
-  "devDependencies": {
-    "@types/node": "^24.0.1",
-    "@types/ws": "^8.5.10",
-    "rollup": "^4.39.0",
-    "standard": "^17.1.2",
-    "typescript": "^5.8.3"
-  },
-  "peerDependencies": {
-    "yjs": "^14.0.0-7"
+  "optionalDependencies": {
+    "minio": "^7.1.3",
+    "postgres": "^3.4.3"
   },
   "engines": {
     "npm": ">=8.0.0",
-    "node": ">=16.0.0"
+    "node": ">=20.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@types/ws": "^8.5.10",
+    "concurrently": "^8.2.2",
+    "standard": "^17.1.0",
+    "typescript": "^5.3.3",
+    "ws": "^8.16.0",
+    "y-websocket": "^2.0.4"
   }
 }
