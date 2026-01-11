@@ -18,17 +18,25 @@ const log = logging.createModuleLogger('@y/redis/s3')
  */
 export const createS3Storage = (bucketName) => {
   const endPoint = env.ensureConf('s3-endpoint')
-  const port = number.parseInt(env.ensureConf('s3-port'))
+  const portEnv = env.getConf('s3-port')
   const useSSL = !['false', '0'].includes(env.getConf('s3-ssl') || 'false')
   const accessKey = env.ensureConf('s3-access-key')
   const secretKey = env.ensureConf('s3-secret-key')
-  return new S3Storage(bucketName, {
+
+  const config = {
     endPoint,
-    port,
     useSSL,
     accessKey,
     secretKey
-  })
+  }
+
+  // Only include port if it's specified
+  if (portEnv) {
+    // @ts-ignore
+    config.port = number.parseInt(portEnv)
+  }
+
+  return new S3Storage(bucketName, config)
 }
 
 /**
@@ -54,7 +62,7 @@ export const decodeS3ObjectName = objectName => {
 /**
  * @typedef {Object} S3StorageConf
  * @property {string} S3StorageConf.endPoint
- * @property {number} S3StorageConf.port
+ * @property {number} [S3StorageConf.port]
  * @property {boolean} S3StorageConf.useSSL
  * @property {string} S3StorageConf.accessKey
  * @property {string} S3StorageConf.secretKey
@@ -85,13 +93,18 @@ export class S3Storage {
    */
   constructor (bucketName, { endPoint, port, useSSL, accessKey, secretKey }) {
     this.bucketName = bucketName
-    this.client = new minio.Client({
+    const clientConfig = {
       endPoint,
-      port,
       useSSL,
       accessKey,
       secretKey
-    })
+    }
+    // Only include port if it's providedsz
+    if (port !== undefined) {
+      // @ts-ignore
+      clientConfig.port = port
+    }
+    this.client = new minio.Client(clientConfig)
   }
 
   /**

@@ -33,8 +33,6 @@ const client = new permissionPackage.Permission(
   creds
 );
 
-console.log(process.env.PERMISSION_SERVICE_URL);
-
 /**
  * @param {string} room
  * @param {string} token

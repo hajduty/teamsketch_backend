@@ -98,6 +98,7 @@ class User {
  * called several times, until some content exists. So you need to handle concurrent calls.
  */
 export const registerYWebsocketServer = async (app, pattern, store, checkAuth, { redisPrefix = 'y', initDocCallback = () => {} } = {}) => {
+  console.log('Registering WebSocket server with pattern:', pattern)
   const [client, subscriber] = await promise.all([
     api.createApiClient(store, redisPrefix),
     createSubscriber(store, redisPrefix)
@@ -123,6 +124,8 @@ export const registerYWebsocketServer = async (app, pattern, store, checkAuth, {
     idleTimeout: 60,
     sendPingsAutomatically: true,
     upgrade: async (res, req, context) => {
+      console.log('WebSocket upgrade request received for URL:', req.getUrl())
+      logging.print('WebSocket upgrade request received for URL:', req.getUrl())
       const url = req.getUrl()
       const headerWsKey = req.getHeader('sec-websocket-key')
       const headerWsProtocol = req.getHeader('sec-websocket-protocol')
@@ -134,6 +137,7 @@ export const registerYWebsocketServer = async (app, pattern, store, checkAuth, {
       })
       try {
         const { hasWriteAccess, room, userid, gc, branch } = await checkAuth(req)
+        console.log(`Incoming connection for room: ${room}, userid: ${userid}, branch: ${branch}`)
         if (aborted) return
         res.cork(() => {
           res.upgrade(

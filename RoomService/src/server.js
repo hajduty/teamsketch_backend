@@ -40,31 +40,34 @@ export const createYWebsocketServer = async ({
   initDocCallback = () => {}
 }) => {
   const app = uws.App({})
-  await registerYWebsocketServer(app, '/:room/:token', store, async (req) => {
-    const room = /** @type {string} */ (req.getParameter(0))
-    const token = /** @type {string} */ (req.getParameter(1))
+  await registerYWebsocketServer(app, '/*', store, async (req) => {
+    const url = req.getUrl()
+    const parts = url.split('/').filter(p => p)
+    const room = parts[0]
+    const token = parts[1]
     // Parse gc and branch query parameters BEFORE any await
     const gc = req.getQuery('gc') !== 'false' // default to true unless explicitly set to 'false'
     const branch = req.getQuery('branch') || 'main'
     if (token == null) {
       throw new Error('Missing Token')
     }
-    // verify that the user has a valid token
-/*     const { payload: userToken } = await jwt.verifyJwt(wsServerPublicKey, token)
-    if (userToken.yuserid == null) {
-      throw new Error('Missing userid in user token!')
-    } */
     try {
       const perm = await checkPermissionFromUrl(room, token)
       if (!perm) {
         throw new Error('Permission denied')
       }
-      return { hasWriteAccess: perm.role === 'Owner' || perm.role === 'Editor', room, userid: perm.userId || '', gc, branch }
+      console.log(`User permission for room ${room}: ${perm.role}`)
+      return { hasWriteAccess: perm.role === 'Owner' || perm.role === 'editor', room, userid: perm.userId || '', gc, branch }
     } catch (e) {
       console.error('Failed to check permissions via gRPC', e)
       throw e
     }
   }, { redisPrefix, initDocCallback })
+
+  // Add a simple HTTP route for testing
+  app.get('/', (res, req) => {
+    res.end('RoomService is running')
+  })
 
   await promise.create((resolve, reject) => {
     app.listen(port, (token) => {
