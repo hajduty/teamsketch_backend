@@ -365,3 +365,4 @@ RoomService/yjs-database/*
 infra/charts/charts/cert-manager-v1.13.2.tgz
 infra/charts/Chart.lock
 infra/charts/values-dev.yaml
+RoomService/.env.xd

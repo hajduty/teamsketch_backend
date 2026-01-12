@@ -1,0 +1,98 @@
+version: '3.9'
+
+services:
+  redis:
+    image: 'redis:alpine'
+    container_name: redis
+    ports:
+      - '6379:6379'
+
+  authservice:
+    build:
+      context: .
+      dockerfile: AuthService/Dockerfile
+    container_name: authservice
+    environment:
+      UserServiceURL: "http://userservice:8080"
+      ConnectionStrings__DefaultConnection: "Server=158.179.204.204;Port=5434;Database=default;User ID=mysql;Password=Tpq3ak0T6HRSAX1ZlNDPSQOVfd9SMjVxxsVpyP4eElUQkoxMGWX5RJ9kiBCRAglq"
+    ports:
+      - "7154:8080"
+    depends_on:
+      - userservice
+
+  permissionservice:
+    build:
+      context: .
+      dockerfile: PermissionService/Dockerfile
+    container_name: permissionservice
+    environment:
+      AuthServiceURL: "http://authservice:8080"
+      UserServiceURL: "http://userservice:8080"
+      ConnectionStrings__RedisConnectionString: "redis:6379,abortConnect=false"
+      ConnectionStrings__DefaultConnection: "Server=158.179.204.204;Port=5434;Database=default;User ID=mysql;Password=Tpq3ak0T6HRSAX1ZlNDPSQOVfd9SMjVxxsVpyP4eElUQkoxMGWX5RJ9kiBCRAglq"
+      ASPNETCORE_URLS: "http://0.0.0.0:7122"
+    ports:
+      - "7122:7122"
+      - "7100:7100"
+    depends_on:
+      - authservice
+      - userservice
+
+  roomservice:
+    build:
+      context: .
+      dockerfile: RoomService/Dockerfile
+    container_name: roomservice
+    command: node ./bin/server.js --no-colors
+    environment:
+      PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
+      REDIS_URL: "redis:6379"
+      PERMISSION_SERVICE_URL: "permissionservice:7122"
+      PORT: 8080
+      port: 3002
+      S3_ENDPOINT: "minio-i4o4gsocoocg80sw8kwwk0o8.95.216.165.107.sslip.io"
+      S3_ACCESS_KEY: "images-admin"
+      S3_SECRET_KEY: "12345678"
+      S3_BUCKET: "images"
+      S3_USE_SSL: "true"
+      REDIS: "redis://redis:6379"
+      AUTH_PERM_CALLBACK: "http://dummy"
+      AUTH_PUBLIC_KEY: "dummy"
+      AllowedOrigin: "http://localhost:5173"
+    ports:
+      - "1234:1234"
+    depends_on:
+      - permissionservice
+      - redis
+
+  worker:
+    build:
+      context: .
+      dockerfile: RoomService/Dockerfile
+    container_name: roomservice-worker
+    command: node ./bin/worker.js --no-colors
+    environment:
+      PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
+      REDIS_URL: "redis:6379"
+      PERMISSION_SERVICE_URL: "permissionservice:7122"
+      PORT: 8080
+      port: 3002
+      S3_ENDPOINT: "minio-i4o4gsocoocg80sw8kwwk0o8.95.216.165.107.sslip.io"
+      S3_ACCESS_KEY: ""
+      S3_SECRET_KEY: ""
+      S3_BUCKET: ""
+      S3_USE_SSL: "true"
+      REDIS: "redis://redis:6379"
+      AUTH_PERM_CALLBACK: "http://dummy"
+      AUTH_PUBLIC_KEY: "dummy"
+      AllowedOrigin: "http://localhost:5173"
+    depends_on:
+      - redis
+
+  userservice:
+    build:
+      context: .
+      dockerfile: UserService/Dockerfile
+    container_name: userservice
+    ports:
+      - "8082:8080"
