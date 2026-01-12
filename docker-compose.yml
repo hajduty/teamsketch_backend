@@ -1,26 +1,32 @@
 version: '3.9'
 
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: sqlserver
-    environment:
-      SA_PASSWORD: "YourStrong(!)Password"
-      ACCEPT_EULA: "Y"
-    ports:
-      - "1433:1433"
-    networks:
-      - app-network
-
   redis:
     image: 'redis:alpine'
     container_name: redis
     ports:
       - '6379:6379'
-    networks:
-      app-network:
-        aliases:
-          - redis
+
+  minio:
+    image: quay.io/minio/minio
+    container_name: minio
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address :9001
+
+  mysql:
+    image: mysql:8
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "Tpq3ak0T6HRSAX1ZlNDPSQOVfd9SMjVxxsVpyP4eElUQkoxMGWX5RJ9kiBCRAglq"
+      MYSQL_ROOT_HOST: "%"
+    volumes:
+      - mysql_data_new:/var/lib/mysql
+    ports:
+      - "3307:3306"
 
   authservice:
     build:
@@ -28,17 +34,15 @@ services:
       dockerfile: AuthService/Dockerfile
     container_name: authservice
     environment:
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
       UserServiceURL: "http://userservice:8080"
+      ConnectionStrings__DefaultConnection: "Server=mysql;Port=3306;Database=TS;User ID=root;Password=Tpq3ak0T6HRSAX1ZlNDPSQOVfd9SMjVxxsVpyP4eElUQkoxMGWX5RJ9kiBCRAglq"
+      AllowedOrigin: "http://localhost:5173"
     ports:
       - "7154:8080"
     depends_on:
       - userservice
-      - sqlserver
-    networks:
-      app-network:
-        aliases:
-          - authservice
+      - mysql
+      - sqlinit
 
   permissionservice:
     build:
@@ -48,40 +52,73 @@ services:
     environment:
       AuthServiceURL: "http://authservice:8080"
       UserServiceURL: "http://userservice:8080"
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
       ConnectionStrings__RedisConnectionString: "redis:6379,abortConnect=false"
+      ConnectionStrings__DefaultConnection: "Server=mysql;Port=3306;Database=TS;User ID=root;Password=Tpq3ak0T6HRSAX1ZlNDPSQOVfd9SMjVxxsVpyP4eElUQkoxMGWX5RJ9kiBCRAglq"
       ASPNETCORE_URLS: "http://0.0.0.0:7122"
+      AllowedOrigin: "http://localhost:5173"
     ports:
       - "7122:7122"
       - "7100:7100"
     depends_on:
       - authservice
       - userservice
-    networks:
-      app-network:
-        aliases:
-          - permissionservice
+      - mysql
+      - sqlinit
 
   roomservice:
     build:
       context: .
       dockerfile: RoomService/Dockerfile
     container_name: roomservice
+    command: node ./bin/server.js --no-colors
     environment:
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
       PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
-      #CERT_PATH: "Shared/Certs/server.crt"
       REDIS_URL: "redis:6379"
       PERMISSION_SERVICE_URL: "permissionservice:7122"
+      PORT: 3002
+      S3_ENDPOINT: "minio"
+      S3_PORT: "9000"
+      S3_ACCESS_KEY: "minioadmin"
+      S3_SECRET_KEY: "minioadmin"
+      S3_BUCKET: "yjs"
+      S3_USE_SSL: "false"
+      REDIS: "redis://redis:6379"
+      AUTH_PERM_CALLBACK: "http://dummy"
+      AUTH_PUBLIC_KEY: "dummy"
+      AllowedOrigin: "http://localhost:5173"
     ports:
-      - "1234:1234"
+      - "3002:3002"
     depends_on:
       - permissionservice
       - redis
-    networks:
-      app-network:
-        aliases:
-          - roomservice
+      - minio
+      - sqlinit
+
+  worker:
+    build:
+      context: .
+      dockerfile: RoomService/Dockerfile
+    container_name: roomservice-worker
+    command: node ./bin/worker.js --no-colors
+    environment:
+      PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
+      REDIS_URL: "redis:6379"
+      PERMISSION_SERVICE_URL: "permissionservice:7122"
+      PORT: 8080
+      S3_ENDPOINT: "minio"
+      S3_PORT: "9000"
+      S3_ACCESS_KEY: "minioadmin"
+      S3_SECRET_KEY: "minioadmin"
+      S3_BUCKET: "yjs"
+      S3_USE_SSL: "false"
+      REDIS: "redis://redis:6379"
+      AUTH_PERM_CALLBACK: "http://dummy"
+      AUTH_PUBLIC_KEY: "dummy"
+      AllowedOrigin: "http://localhost:5173"
+    depends_on:
+      - minio
+      - redis
+      - sqlinit
 
   userservice:
     build:
@@ -89,16 +126,36 @@ services:
       dockerfile: UserService/Dockerfile
     container_name: userservice
     environment:
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TS;User Id=sa;Password=YourStrong(!)Password;TrustServerCertificate=True;"
+      ConnectionStrings__DefaultConnection: "Server=mysql;Port=3306;Database=TS;User ID=root;Password=Tpq3ak0T6HRSAX1ZlNDPSQOVfd9SMjVxxsVpyP4eElUQkoxMGWX5RJ9kiBCRAglq"
     ports:
       - "8082:8080"
     depends_on:
-      - sqlserver
-    networks:
-      app-network:
-        aliases:
-          - userservice
+      - mysql
+      - sqlinit
 
-networks:
-  app-network:
-    driver: bridge
+ # sqlinit:
+ #   image: mysql:8
+ #   depends_on:
+ #     - mysql
+ #   volumes:
+ #     - ./sql-scripts:/scripts
+ #     - ./sql-init.sh:/sql-init.sh
+ #   environment:
+ #     MYSQL_ROOT_PASSWORD: "Tpq3ak0T6HRSAX1ZlNDPSQOVfd9SMjVxxsVpyP4eElUQkoxMGWX5RJ9kiBCRAglq"
+ #   command: ["bash", "-c", "chmod +x /sql-init.sh && /sql-init.sh"]
+
+  sqlinit:
+    image: mysql:8.1
+    depends_on:
+      - mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: "Tpq3ak0T6HRSAX1ZlNDPSQOVfd9SMjVxxsVpyP4eElUQkoxMGWX5RJ9kiBCRAglq"
+    volumes:
+      - ./sql-scripts:/scripts:ro
+      - ./sql-init.sh:/sql-init.sh:ro
+    entrypoint: ["/bin/bash", "/sql-init.sh"]
+
+volumes:
+  mysql_data:
+  mysql_data_new:
+  minio_data:

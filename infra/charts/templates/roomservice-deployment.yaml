@@ -1,24 +1,51 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Chart.Name }}-roomservice
+  name: {{ .Chart.Name }}-roomservice-server
   labels:
-    app: {{ .Chart.Name }}-roomservice
+    app: {{ .Chart.Name }}-roomservice-server
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Chart.Name }}-roomservice
+      app: {{ .Chart.Name }}-roomservice-server
   template:
     metadata:
       labels:
-        app: {{ .Chart.Name }}-roomservice
+        app: {{ .Chart.Name }}-roomservice-server
     spec:
       containers:
-      - name: {{ .Chart.Name }}-roomservice
+      - name: {{ .Chart.Name }}-roomservice-server
         image: "{{ .Values.roomservice.repository }}:{{ .Values.roomservice.tag }}"
+        command: ["node", "./bin/server.js"]
         ports:
           - containerPort: {{ .Values.roomservice.containerPort }}
+        env:
+        {{- range $key, $value := .Values.env }}
+        - name: {{ $key }}
+          value: "{{ $value }}"
+        {{- end }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}-roomservice-worker
+  labels:
+    app: {{ .Chart.Name }}-roomservice-worker
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}-roomservice-worker
+  template:
+    metadata:
+      labels:
+        app: {{ .Chart.Name }}-roomservice-worker
+    spec:
+      containers:
+      - name: {{ .Chart.Name }}-roomservice-worker
+        image: "{{ .Values.roomservice.repository }}:{{ .Values.roomservice.tag }}"
+        command: ["node", "./bin/worker.js"]
         env:
         {{- range $key, $value := .Values.env }}
         - name: {{ $key }}

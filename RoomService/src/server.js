@@ -1,61 +1,85 @@
-#!/usr/bin/env node
-
-import http from 'http'
-import WebSocket from 'ws'
-import { LeveldbPersistence } from 'y-leveldb'
+import * as uws from 'uws'
+import * as logging from 'lib0/logging'
+import * as error from 'lib0/error.js'
+import { registerYWebsocketServer } from './ws.js'
+import * as promise from 'lib0/promise.js'
+// @ts-ignore
 import { checkPermissionFromUrl } from './grpcClient.js'
-import * as number from 'lib0/number'
-import * as Y from 'yjs'
-import { setPersistence, setupWSConnection } from './utils.js'
 import './redisSubscription.js'
 
-const host = process.env.HOST || '0.0.0.0'
-const port = number.parseInt(process.env.PORT || '1234')
+//const wsServerPublicKey = await ecdsa.importKeyJwk(json.parse(env.ensureConf('auth-public-key')))
+// const wsServerPrivateKey = await ecdsa.importKeyJwk(json.parse(env.ensureConf('auth-private-key')))
 
-const ldb = new LeveldbPersistence('./yjs-database')
-
-setPersistence({
-  provider: ldb,
-
-  bindState: async (docName, ydoc) => {
-    const persistedDoc = await ldb.getYDoc(docName)
-    const state = Y.encodeStateAsUpdate(persistedDoc)
-    Y.applyUpdate(ydoc, state)
-
-    ydoc.on('update', update => {
-      ldb.storeUpdate(docName, update)
-    })
-  },
-
-  writeState: async (_docName, _ydoc) => Promise.resolve()
-})
-
-const server = http.createServer((_req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' })
-  res.end('okay')
-})
-
-const wss = new WebSocket.Server({ noServer: true })
-
-wss.on('connection', async (ws, req) => {
-  await setupWSConnection(ws, req)
-  //console.log(`New connection to room "${req.url?.slice(1) || 'default-room'}"`)
-})
-
-server.on('upgrade', async (request, socket, head) => {
-  const userInfo = await checkPermissionFromUrl(request.url)
-
-  if (!userInfo) {
-    socket.write("HTTP/1.1 403 Forbidden\r\n\r\n")
-    socket.destroy()
-    return
+class YWebsocketServer {
+  /**
+   * @param {uws.TemplatedApp} app
+   */
+  constructor (app) {
+    this.app = app
   }
 
-  wss.handleUpgrade(request, socket, head, ws => {
-    wss.emit('connection', ws, request)
-  })
-})
+  async destroy () {
+    this.app.close()
+  }
+}
 
-server.listen(port, host, () => {
-  console.log(`running at '${host}' on port ${port}`)
-})
+/**
+ * @param {Object} opts
+ * @param {number} opts.port
+ * @param {import('./storage.js').AbstractStorage} opts.store
+ * @param {string} [opts.redisPrefix]
+ * @param {(room:string,docname:string,client:import('./api.js').Api)=>void} [opts.initDocCallback] -
+// this is called when a doc is accessed, but it doesn't exist. You could populate the doc here.
+// However, this function could be called several times, until some content exists. So you need to
+// handle concurrent calls.
+ */
+export const createYWebsocketServer = async ({
+  redisPrefix = 'y',
+  port,
+  store,
+  initDocCallback = () => {}
+}) => {
+  const app = uws.App({})
+  await registerYWebsocketServer(app, '/*', store, async (req) => {
+    const url = req.getUrl()
+    const parts = url.split('/').filter(p => p)
+    const room = parts[0]
+    const token = parts[1]
+    // Parse gc and branch query parameters BEFORE any await
+    const gc = req.getQuery('gc') !== 'false' // default to true unless explicitly set to 'false'
+    const branch = req.getQuery('branch') || 'main'
+    if (token == null) {
+      throw new Error('Missing Token')
+    }
+    try {
+      const perm = await checkPermissionFromUrl(room, token)
+      if (!perm) {
+        throw new Error('Permission denied')
+      }
+      console.log(`User permission for room ${room}: ${perm.role}`)
+      return { hasWriteAccess: perm.role === 'Owner' || perm.role === 'editor', room, userid: perm.userId || '', gc, branch }
+    } catch (e) {
+      console.error('Failed to check permissions via gRPC', e)
+      throw e
+    }
+  }, { redisPrefix, initDocCallback })
+
+  // Add a simple HTTP route for testing
+  app.get('/', (res, req) => {
+    res.end('RoomService is running')
+  })
+
+  await promise.create((resolve, reject) => {
+    app.listen(port, (token) => {
+      if (token) {
+        logging.print(logging.GREEN, '[y-redis] Listening to port ', port)
+        resolve()
+      } else {
+        const err = error.create('[y-redis] Failed to lisen to port ' + port)
+        reject(err)
+        throw err
+      }
+    })
+  })
+  return new YWebsocketServer(app)
+}

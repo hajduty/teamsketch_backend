@@ -1,9 +1,10 @@
-﻿using UserService.Core.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using UserService.Infrastructure.Repositories;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using UserService.Core.Interfaces;
 using UserService.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
+using UserService.Infrastructure.Repositories;
 
 namespace UserService.Infrastructure;
 
@@ -14,7 +15,7 @@ public static class DependencyInjection
         if (!services.Any(d => d.ServiceType == typeof(DbContextOptions<AppDbContext>)))
         {
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
+                options.UseMySql(config.GetConnectionString("DefaultConnection"), ServerVersion.Create(new Version(8, 0, 27), ServerType.MySql)));
         }
 
         services.AddScoped<IUserRepository, UserRepository>();

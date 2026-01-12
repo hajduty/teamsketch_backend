@@ -1,9 +1,11 @@
 import Redis from "ioredis";
-import { closeConnectionByUserAndRoom } from "./utils.js";
+import { closeConnectionByUserAndRoom } from "./ws.js";
 
+// @ts-ignore
 const redis = new Redis(process.env.REDIS_URL || "localhost:6379");
 
 // Subscribe to the permission-events channel
+// @ts-ignore
 redis.subscribe("user:kick", (err, count) => {
   if (err) {
     console.error("Failed to subscribe: ", err);
@@ -12,6 +14,7 @@ redis.subscribe("user:kick", (err, count) => {
   }
 });
 
+// @ts-ignore
 redis.on("message", (channel, message) => {
   console.log("RAW MESSAGE:", channel, message);
   if (channel === "user:kick") {
@@ -32,6 +35,7 @@ redis.on("message", (channel, message) => {
   }
 });
 
+// @ts-ignore
 redis.on("error", (err) => {
   console.error("Redis error:", err);
 });

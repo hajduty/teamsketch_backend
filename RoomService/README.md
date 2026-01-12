@@ -1,81 +1,190 @@
+# y/hub :tophat: 
+> y-websocket compatible backend using Redis for scalability. **This is beta
+> software!**
 
-# y-websocket-server :tophat:
-> Simple backend for [y-websocket](https://github.com/yjs/y-websocket)
+y/hub is an alternative backend for y-websocket. It only requires a redis
+instance and a storage provider (S3 or Postgres-compatible). 
 
-The Websocket Provider is a solid choice if you want a central source that
-handles authentication and authorization. Websockets also send header
-information and cookies, so you can use existing authentication mechanisms with
-this server.
+* **Memory efficient:** The server doesn't maintain a Y.Doc in-memory. It
+streams updates through redis. The Yjs document is only loaded to memory for the
+initial sync. 
+* **Scalable:** You can start as many y/hub instances as you want to handle
+a fluctuating number of clients. No coordination is needed.
+- **Auth:** y/hub works together with your existing infrastructure to
+authenticate clients and check whether a client has read-only / read-write
+access to a document.
+- **Database agnostic:** You can persist documents in S3-compatible backends, in
+Postgres, or implement your own storage provider.
 
-## Quick Start
+### Licensing
 
-### Install dependencies
+y/hub is dual-licensed (either [AGPL](./LICENSE) or proprietary).
+
+Please contact me to buy a license if you intend to use y/hub in your
+commercial product: <kevin.jahns at pm.me>
+
+Otherwise, you may use this software under the terms of the AGPL, which requires
+you to publish your source code under the terms of the AGPL too.
+
+### Components
+
+Redis is used as a "cache" and a distribution channel for document updates.
+Normal databases are not fast enough for handling real-time updates of
+fast-changing applications (e.g. collaborative drawing applications that
+generate hundreds of operations per second). Hence a redis-cache for temporary
+storage makes sense to distribute documents as fast as possible to all peers.
+
+A persistent storage (e.g. S3 or Postgres) is used to persist document updates
+permanently. You can configure in which intervals you want to persist data from
+redis to the persistent storage. You can even implement a custom persistent
+storage technology.
+
+The y/hub **server component** (`/bin/server.js`) is responsible for accepting
+websocket-connections and distributing the updates via redis streams. Each
+"room" is represented as a redis stream. The server component assembles updates
+stored redis and in the persistent storage (e.g. S3 or Postgres) for the initial
+sync. After the initial sync, the server doesn't keep any Yjs state in-memory.
+You can start as many server components as you need. It makes sense to put the
+server component behind a loadbalancer, which can potentially auto-scale the
+server component based on CPU or network usage. 
+
+The separate y/hub **worker component** (`/bin/worker.js`) is responsible for
+extracting data from the redis cache to a persistent database like S3 or
+Postgres. Once the data is persisted, the worker component cleans up stale data
+in redis. You can start as many worker components as you need. It is recommended
+to run at least one worker, so that the data is eventually persisted. The worker
+components coordinate which room needs to be persisted using a separate
+worker-queue (see `y:worker` stream in redis).
+
+You are responsible for providing a REST backend that y/hub will call to check
+whether a specific client (authenticated via a JWT token) has access to a
+specific room / document. Example servers can be found in
+`/bin/auth-server-example.js` and `/demos/auth-express/server.js`.
+
+### Missing Features
+
+I'm looking for sponsors that want to sponsor the following work:
+
+- Ability to kick out users when permissions on a document changed
+- Configurable docker containers for y/hub server & worker
+- Helm chart
+- More exhaustive logging and reporting of possible issues
+- More exhaustive testing
+- Better documentation & more documentation for specific use-cases
+- Support for Bun and Deno
+- Perform expensive tasks (computing sync messages) in separate threads
+
+If you are interested in sponsoring some of this work, please send a mail to
+<kevin.jahns at pm.me>.
+
+# Quick Start (docker-compose)
+
+You can get everything running quickly using
+[docker-compose](https://docs.docker.com/compose/). The compose file runs the
+following components:
+
+- redis
+- minio as a s3 endpoint
+- a single y/hub server
+- a single y/hub worker
+
+This can be a good starting point for your application. If your cloud provider
+has a managed s3 service, you should probably use that instead of minio. If you
+want to use minio, you need to setup proper volumes and backups.
+
+The full setup gives insight into more specialized configuration options.
 
 ```sh
-npm i @y/websocket-server
+git clone https://github.com/yjs/yhub.git
+cd yhub
+npm i
 ```
 
-### Start a y-websocket server
-
-This repository implements a basic server that you can adopt to your specific use-case. [(source code)](./src/)
-
-Start a y-websocket server:
+### Setup the environment variables
 
 ```sh
-HOST=localhost PORT=1234 npx y-websocket
+cp .env.docker.template .env
+# generate unique authentication tokens
+npx 0ecdsa-generate-keypair --name auth >> .env
 ```
 
-### Client Code:
+The sample configuration configures s3 using minio.
+Have a look at `.env.template` for more configuration options.
 
-```js
-import * as Y from 'yjs'
-import { WebsocketProvider } from 'y-websocket'
-
-const doc = new Y.Doc()
-const wsProvider = new WebsocketProvider('ws://localhost:1234', 'my-roomname', doc)
-
-wsProvider.on('status', event => {
-  console.log(event.status) // logs "connected" or "disconnected"
-})
-```
-
-## Websocket Server
-
-Start a y-websocket server:
+### Run demo
 
 ```sh
-HOST=localhost PORT=1234 npx y-websocket
+cd ./demos/auth-express
+docker compose up
+# open http://localhost:5173 in a browser
 ```
 
-Since npm symlinks the `y-websocket` executable from your local `./node_modules/.bin` folder, you can simply run npx. The `PORT` environment variable already defaults to 1234, and `HOST` defaults to `localhost`.
+# Full setup
 
-### Websocket Server with Persistence
+Components are configured via environment variables. It makes sense to start by
+cloning y/hub and getting one of the demos to work.
 
-Persist document updates in a LevelDB database.
+Note: If you want to use any of the docker commands, feel free to use podman (a
+more modern alternative) instead.
 
-See [LevelDB Persistence](https://github.com/yjs/y-leveldb) for more info.
+#### Start a redis instance
+
+Setup redis on your computer. Follow the [official
+documentation](https://redis.io/docs/install/install-redis/). This is
+recommended if you want to debug the redis stream.
+
+Alternatively, simply run redis via docker:
 
 ```sh
-HOST=localhost PORT=1234 YPERSISTENCE=./dbDir npx y-websocket
+# start the official redis docker container on port 6379
+docker run -p 6379:6379 redis
+# or `npm run redis`
 ```
 
-### Websocket Server with HTTP callback
+#### Start an S3 instance
 
-Send a debounced callback to an HTTP server (`POST`) on document update. Note that this implementation doesn't implement a retry logic in case the `CALLBACK_URL` does not work.
+Setup an S3-compatible store at your favorite cloud provider.
 
-Can take the following ENV variables:
-
-* `CALLBACK_URL` : Callback server URL
-* `CALLBACK_DEBOUNCE_WAIT` : Debounce time between callbacks (in ms). Defaults to 2000 ms
-* `CALLBACK_DEBOUNCE_MAXWAIT` : Maximum time to wait before callback. Defaults to 10 seconds
-* `CALLBACK_TIMEOUT` : Timeout for the HTTP call. Defaults to 5 seconds
-* `CALLBACK_OBJECTS` : JSON of shared objects to get data (`'{"SHARED_OBJECT_NAME":"SHARED_OBJECT_TYPE}'`)
+Alternatively, simply run a *minio* store as a docker container:
 
 ```sh
-CALLBACK_URL=http://localhost:3000/ CALLBACK_OBJECTS='{"prosemirror":"XmlFragment"}' npm start
+docker run -p 9000:9000 -p 9001:9001 quay.io/minio/minio server /data --console-address \":9001\"
+# or `npm run minio`
 ```
-This sends a debounced callback to `localhost:3000` 2 seconds after receiving an update (default `DEBOUNCE_WAIT`) with the data of an XmlFragment named `"prosemirror"` in the body.
 
-## License
+This is just a dev setup. Have a look at the minio documentation if you want to
+run it in production.
 
-[The MIT License](./LICENSE) © Kevin Jahns
+#### Clone demo
+
+```sh
+git clone https://github.com/yjs/yhub.git
+cd yhub
+npm i
+```
+
+All features are configurable using environment variables. For local development
+it makes sense to setup a `.env` file, that stores project-specific secrets. Use
+`.env.template` as a template to setup environment variables. Make sure to read
+the documentation carefully and configure every single variable.
+
+```sh
+# setup environment variables
+cp .env.template .env
+nano .env
+```
+
+Then you can run the different components in separate terminals:
+
+```sh
+# run the server
+npm run start:server
+# run a single worker in a separate terminal
+npm run start:worker
+# start the express server in a separater terminal
+cd demos/auth-express
+npm i
+npm start
+```
+
+Open [`http://localhost:5173`](http://localhost:5173) in a browser.

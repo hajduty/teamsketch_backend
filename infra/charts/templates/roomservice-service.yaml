@@ -6,9 +6,9 @@ metadata:
     app: {{ .Chart.Name }}-roomservice
 spec:
   selector:
-    app: {{ .Chart.Name }}-roomservice
+    app: {{ .Chart.Name }}-roomservice-server
   ports:
     - protocol: TCP
-      port: 8080
-      targetPort: 8080
+      port: 3002
+      targetPort: 3002
   type: ClusterIP

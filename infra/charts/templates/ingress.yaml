@@ -80,4 +80,4 @@ spec:
             service:
               name: {{ .Chart.Name }}-roomservice
               port:
-                number: 8080
+                number: 3002

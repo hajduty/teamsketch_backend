@@ -7,6 +7,9 @@ env:
   REDIS_URL: "teamsketch-redis:6379"
   PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
   PORT: 8080
+  # YHUB RoomService Configuration
+  REDIS: "redis://teamsketch-redis:6379"
+  AUTH_PERM_CALLBACK: "http://dummy"
 
 replicaCount: 1
 
@@ -32,7 +35,7 @@ permissionservice:
 
 roomservice:
   repository: "tsacr3244.azurecr.io/hajduty/roomservice"
-  containerPort: 8080
+  containerPort: 3002
   tag: "10"
 
 userservice:
