@@ -1,28 +1,27 @@
-﻿using Grpc.Core;
-using Microsoft.AspNetCore.Identity;
+using Grpc.Core;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
 using PermissionService.Core.Interfaces;
-using System.IdentityModel.Tokens.Jwt;
-using System.Reflection.Metadata.Ecma335;
-using System.Security.Claims;
-using UserService.Grpc;
 using static PermissionService.API.Permission;
 
 namespace PermissionService.API.Services
 {
-    public class PermissionGrpcService(IPermissionService permissionService) : PermissionBase
+    public class PermissionGrpcService(IPermissionService permissionService, IOptionsMonitor<JwtBearerOptions> jwtOptions) : PermissionBase
     {
+        private static readonly JsonWebTokenHandler TokenHandler = new();
+
         public override async Task<PermissionResponse> CheckPermission(PermissionRequest request, ServerCallContext context)
         {
-            var userId = "";
+            // Same signing keys (JWKS), issuer, audience and lifetime rules as the REST endpoints
+            var validation = jwtOptions.Get(JwtBearerDefaults.AuthenticationScheme).TokenValidationParameters;
+            var result = await TokenHandler.ValidateTokenAsync(request.Token, validation);
 
-            try
-            {
-                var handler = new JwtSecurityTokenHandler();
-                var token = handler.ReadJwtToken(request.Token);
-                var emailClaim = token.Claims.FirstOrDefault(c => c.Type == "sub");
-                userId = emailClaim?.Value ?? throw new RpcException(new Status(StatusCode.Unauthenticated, "Id claim not found in token."));
-            }
-            catch { throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid token.")); }
+            if (!result.IsValid)
+                throw new RpcException(new Status(StatusCode.Unauthenticated, "Invalid token."));
+
+            var userId = result.ClaimsIdentity.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
+                ?? throw new RpcException(new Status(StatusCode.Unauthenticated, "Id claim not found in token."));
 
             var permission = await permissionService.GetUserPermission(userId, request.Room);
 
