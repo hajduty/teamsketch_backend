@@ -13,3 +13,5 @@ USER node
 
 EXPOSE 3002
 
+
+CMD ["node", "./bin/server.js"]
