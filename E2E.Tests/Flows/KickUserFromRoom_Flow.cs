@@ -1,15 +1,11 @@
 ﻿using AuthService.Core.DTOs;
 using E2E.Tests.Fixtures;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Org.BouncyCastle.Crypto.Prng;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Net.WebSockets;
-using System.Text;
 using System.Text.Json;
-using UserService.Core.DTOs;
 using Xunit.Abstractions;
 
 namespace E2E.Tests.Flows
@@ -30,26 +26,9 @@ namespace E2E.Tests.Flows
 
             _authClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{_fixture.AuthService.GetMappedPublicPort(8080)}") };
             _permClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{_fixture.PermissionService.GetMappedPublicPort(7100)}") };
-            _roomClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{_fixture.RoomService.GetMappedPublicPort(1234)}") };
+            _roomClient = new HttpClient { BaseAddress = new Uri($"http://localhost:{_fixture.RoomService.GetMappedPublicPort(3002)}") };
         }
 
-        private static void WriteVarUint(BinaryWriter writer, uint value)
-        {
-            while (value > 0x7F)
-            {
-                writer.Write((byte)((value & 0x7F) | 0x80));
-                value >>= 7;
-            }
-            writer.Write((byte)value);
-        }
-
-        private static void WriteVarUint8Array(BinaryWriter writer, byte[] data)
-        {
-            WriteVarUint(writer, (uint)data.Length);
-            writer.Write(data);
-        }
-
-        // TODO: Refactor
         [Fact]
         public async Task KickUserFromRoom_WhenPermissionsRemoved_ShouldCloseWebSocket()
         {
@@ -102,66 +81,15 @@ namespace E2E.Tests.Flows
                 await Task.Delay(500);
 
                 var user2WebSocket = new ClientWebSocket();
-                var websocketUrl = $"ws://localhost:{_fixture.RoomService.GetMappedPublicPort(1234)}/newRoom/{user2Result.Token}";
+                var websocketUrl = $"ws://localhost:{_fixture.RoomService.GetMappedPublicPort(3002)}/newRoom/{user2Result.Token}";
                 await user2WebSocket.ConnectAsync(new Uri(websocketUrl), CancellationToken.None);
                 Assert.Equal(WebSocketState.Open, user2WebSocket.State);
-
-                var awarenessState = new { userId = user2Id };
-                var stateJson = JsonSerializer.Serialize(awarenessState);
-                var stateBytes = Encoding.UTF8.GetBytes(stateJson);
-
-                using var memoryStream = new MemoryStream();
-                using var writer = new BinaryWriter(memoryStream);
-
-                // Message type = 1 (awareness)
-                WriteVarUint(writer, 1);
-
-                // Create the awareness update payload first
-                using var awarenessStream = new MemoryStream();
-                using var awarenessWriter = new BinaryWriter(awarenessStream);
-
-                // Number of clients with updates
-                WriteVarUint(awarenessWriter, 1);
-
-                // Client ID
-                var clientID = (uint)new Random().Next(1, int.MaxValue);
-                WriteVarUint(awarenessWriter, clientID);
-
-                // Clock
-                WriteVarUint(awarenessWriter, 1);
-
-                // State (as var uint8 array)
-                WriteVarUint8Array(awarenessWriter, stateBytes);
-
-                // Now write the awareness payload as a uint8array to the main message
-                var awarenessPayload = awarenessStream.ToArray();
-                WriteVarUint8Array(writer, awarenessPayload);
-
-                var messageBytes = memoryStream.ToArray();
-
-                await Task.Delay(500);
-
-                await user2WebSocket.SendAsync(
-                    new ArraySegment<byte>(messageBytes),
-                    WebSocketMessageType.Binary,
-                    true,
-                    CancellationToken.None
-                );
 
                 await Task.Delay(2000);
                 var removeUser2 = await _permClient.DeleteAsync($"/api/Permission?roomId=newRoom&userId={user2Id}");
                 Assert.Equal(HttpStatusCode.OK, removeUser2.StatusCode);
 
                 await Task.Delay(2000);
-
-                // Send a ping to flush the connection
-                var pingMessage = new byte[] { 0x01 };
-                await user2WebSocket.SendAsync(
-                    new ArraySegment<byte>(pingMessage),
-                    WebSocketMessageType.Binary,
-                    true,
-                    CancellationToken.None
-                );
 
                 // Keep receiving until we get the close frame
                 var buffer = new byte[4096];
