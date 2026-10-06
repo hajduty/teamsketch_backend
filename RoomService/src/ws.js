@@ -263,7 +263,7 @@ export const closeConnectionByUserAndRoom = (targetUserId, targetRoomId) => {
     if (userSet) {
       for (const ws of userSet) {
         try {
-          ws.close()
+          ws.end(4003, 'Permission revoked')
           closedAny = true
         } catch (e) {
           console.error(`Error closing connection for user ${targetUserId}:`, e)
