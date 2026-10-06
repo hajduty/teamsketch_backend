@@ -1,33 +1,44 @@
 import * as t from 'lib0/testing.js'
-import { createPostgresStorage } from '../src/storage/postgres.js'
-import { createMemoryStorage } from '../src/storage/memory.js'
 import * as Y from 'yjs'
-import { createS3Storage } from '../src/storage/s3.js'
 import * as env from 'lib0/environment.js'
-
-const s3TestBucketName = 'yredis-tests'
+import { createMemoryStorage } from '../src/storage/memory.js'
 
 /**
+ * Runs the same contract against every storage backend that is configured in the environment.
+ * Memory always runs; MySQL, Postgres and S3 run when MYSQL, POSTGRES_TESTDB or S3_ENDPOINT are set.
+ *
  * @param {t.TestCase} _tc
  */
 export const testStorages = async _tc => {
-  const s3 = createS3Storage(s3TestBucketName)
-  try {
-    // make sure the bucket exists
-    await s3.client.makeBucket(s3TestBucketName)
-  } catch (e) {}
-  try {
-    const files = await s3.client.listObjectsV2(s3TestBucketName, '', true).toArray()
-    await s3.client.removeObjects(s3TestBucketName, files.map(file => file.name))
-  } catch (e) {}
-  const postgres = await createPostgresStorage({ database: env.ensureConf('postgres-testdb') })
-  await postgres.sql`DELETE from yredis_docs_v2`
-  const memory = createMemoryStorage()
-
   /**
    * @type {Object<string, import('../src/storage.js').AbstractStorage>}
    */
-  const storages = { s3, postgres, memory }
+  const storages = { memory: createMemoryStorage() }
+  if (env.getConf('mysql')) {
+    const { createMySqlStorage } = await import('../src/storage/mysql.js')
+    const mysql = await createMySqlStorage()
+    await mysql.pool.query("DELETE FROM yjs_docs WHERE room IN ('room', 'nonexistend')")
+    storages.mysql = mysql
+  }
+  if (env.getConf('postgres-testdb')) {
+    const { createPostgresStorage } = await import('../src/storage/postgres.js')
+    const postgres = await createPostgresStorage({ database: env.ensureConf('postgres-testdb') })
+    await postgres.sql`DELETE from yredis_docs_v2`
+    storages.postgres = postgres
+  }
+  if (env.getConf('s3-endpoint')) {
+    const { createS3Storage } = await import('../src/storage/s3.js')
+    const s3TestBucketName = 'yredis-tests'
+    const s3 = createS3Storage(s3TestBucketName)
+    try {
+      await s3.client.makeBucket(s3TestBucketName)
+    } catch (e) {}
+    try {
+      const files = await s3.client.listObjectsV2(s3TestBucketName, '', true).toArray()
+      await s3.client.removeObjects(s3TestBucketName, files.map(file => file.name))
+    } catch (e) {}
+    storages.s3 = s3
+  }
   for (const storageName in storages) {
     const storage = storages[storageName]
     await t.groupAsync(`storage: ${storageName}`, async () => {

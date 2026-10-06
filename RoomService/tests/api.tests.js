@@ -4,9 +4,8 @@ import * as api from '../src/api.js'
 import * as encoding from 'lib0/encoding.js'
 import * as promise from 'lib0/promise.js'
 import * as redis from 'redis'
-import { prevClients, store } from './utils.js'
+import { prevClients, store, redisPrefix } from './utils.js'
 
-const redisPrefix = 'ytests'
 
 /**
  * @param {t.TestCase} tc
