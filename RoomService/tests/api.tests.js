@@ -26,17 +26,23 @@ const createTestCase = async tc => {
   const branch = 'main'
   const stream = api.computeRedisRoomStreamName(room, docid, branch, redisPrefix)
   const ydoc = new Y.Doc()
+  /**
+   * @type {Array<Promise<any>>}
+   */
+  const pendingMessages = []
   ydoc.on('update', update => {
     const m = encoding.encode(encoder => {
       encoding.writeVarUint(encoder, 0) // sync protocol
       encoding.writeVarUint(encoder, 2) // update message
       encoding.writeVarUint8Array(encoder, update)
     })
-    client.addMessage(room, docid, Buffer.from(m))
+    pendingMessages.push(client.addMessage(room, docid, Buffer.from(m)))
   })
   return {
     client,
     ydoc,
+    // the first script call goes EVALSHA -> NOSCRIPT -> EVAL, so reads can overtake unawaited writes
+    flush: () => promise.all(pendingMessages),
     room,
     docid,
     stream
@@ -55,9 +61,10 @@ const createWorker = async () => {
  * @param {t.TestCase} tc
  */
 export const testUpdateApiMessages = async tc => {
-  const { client, ydoc, room, docid } = await createTestCase(tc)
+  const { client, ydoc, flush, room, docid } = await createTestCase(tc)
   ydoc.getMap().set('key1', 'val1')
   ydoc.getMap().set('key2', 'val2')
+  await flush()
   const { ydoc: loadedDoc } = await client.getDoc(room, docid)
   t.compare(loadedDoc.getMap().get('key1'), 'val1')
   t.compare(loadedDoc.getMap().get('key2'), 'val2')
