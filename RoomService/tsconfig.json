@@ -5,25 +5,18 @@
     "lib": ["es2022", "dom"],
     "allowJs": true,
     "checkJs": true,
-    "declaration": true,
-    "declarationMap": true,
+    "declaration": false,
+    "declarationMap": false,
     "outDir": "./dist",
     // "rootDir": "./src",
-    "composite": true,
+    "composite": false,
     "strict": true,
     "noImplicitAny": true,
-    "emitDeclarationOnly": true,
+    "noEmit": true,
     "moduleResolution": "nodenext",
-    "baseUrl": "./",
-    "paths": {
-      "@y/redis": ["./src/index.js"],
-      "@y/redis/storage/memory": ["./src/storage/memory.js"],
-      "@y/redis/storage/s3": ["./src/storage/s3.js"],
-      "@y/redis/storage/postgres": ["./src/storage/postgres.js"]
-    }
   },
   "exclude": [
     "**/dist",
-    "./demos/blocksuite/"
+    "./node_modules"
   ]
 }

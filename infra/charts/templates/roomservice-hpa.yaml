@@ -1,0 +1,20 @@
+{{- if .Values.roomservice.server.autoscaling.enabled }}
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ .Chart.Name }}-roomservice-server
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ .Chart.Name }}-roomservice-server
+  minReplicas: {{ .Values.roomservice.server.replicas }}
+  maxReplicas: {{ .Values.roomservice.server.autoscaling.maxReplicas }}
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: {{ .Values.roomservice.server.autoscaling.targetCPUUtilizationPercentage }}
+{{- end }}

@@ -7,9 +7,7 @@ env:
   REDIS_URL: "teamsketch-redis:6379"
   PROTO_PATH: "Shared/Contracts/Protos/permission_service.proto"
   PORT: 8080
-  # YHUB RoomService Configuration
   REDIS: "redis://teamsketch-redis:6379"
-  AUTH_PERM_CALLBACK: "http://dummy"
 
 replicaCount: 1
 
@@ -37,6 +35,28 @@ roomservice:
   repository: "tsacr3244.azurecr.io/hajduty/roomservice"
   containerPort: 3002
   tag: "10"
+  # mysql://user:password@host:3306/TS, set by the pipeline
+  mysqlUrl: ""
+  server:
+    replicas: 2
+    autoscaling:
+      enabled: true
+      maxReplicas: 6
+      targetCPUUtilizationPercentage: 70
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        memory: "512Mi"
+  worker:
+    replicas: 1
+    resources:
+      requests:
+        cpu: "50m"
+        memory: "128Mi"
+      limits:
+        memory: "512Mi"
 
 userservice:
   repository: "tsacr3244.azurecr.io/hajduty/userservice"

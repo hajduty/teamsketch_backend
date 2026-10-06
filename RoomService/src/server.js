@@ -7,9 +7,6 @@ import * as promise from 'lib0/promise.js'
 import { checkPermissionFromUrl } from './grpcClient.js'
 import './redisSubscription.js'
 
-//const wsServerPublicKey = await ecdsa.importKeyJwk(json.parse(env.ensureConf('auth-public-key')))
-// const wsServerPrivateKey = await ecdsa.importKeyJwk(json.parse(env.ensureConf('auth-private-key')))
-
 class YWebsocketServer {
   /**
    * @param {uws.TemplatedApp} app
@@ -64,9 +61,13 @@ export const createYWebsocketServer = async ({
     }
   }, { redisPrefix, initDocCallback })
 
-  // Add a simple HTTP route for testing
   app.get('/', (res, req) => {
     res.end('RoomService is running')
+  })
+
+  // liveness/readiness probe, the server holds no document state so it is ready once it listens
+  app.get('/healthz', (res, req) => {
+    res.end('ok')
   })
 
   await promise.create((resolve, reject) => {

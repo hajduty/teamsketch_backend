@@ -1,9 +1,8 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
-name: .NET Ci
+name: CI
 
 on:
+  push:
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -13,34 +12,74 @@ permissions:
   pull-requests: write
 
 jobs:
-  build-and-test:
-
+  dotnet:
+    name: .NET services + E2E
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Docker
       uses: docker/setup-buildx-action@v3
-      
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 9.0.x
 
+    # The Docker E2E tests run against these images
     - name: Build Docker images
       run: docker compose build
 
     - name: Restore dependencies
       run: dotnet restore
-      
+
     - name: Run tests
       run: dotnet test --no-restore --verbosity normal --logger "trx;LogFileName=test-results.trx"
-      
+
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: always()
       with:
-        name: Test Results
+        name: .NET Test Results
         path: '**/test-results.trx'
         reporter: dotnet-trx
+
+  roomservice:
+    name: RoomService
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: RoomService
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: [ "6379:6379" ]
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: ci
+          MYSQL_DATABASE: TS
+        ports: [ "3306:3306" ]
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -pci"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+
+    env:
+      REDIS: redis://localhost:6379
+      MYSQL: mysql://root:ci@127.0.0.1:3306/TS
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: npm
+        cache-dependency-path: RoomService/package-lock.json
+
+    - run: npm ci
+    - run: npm run typecheck
+    - name: Storage + Redis API tests
+      run: node tests/index.js

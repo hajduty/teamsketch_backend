@@ -4,12 +4,11 @@ param acrName string
 param rgName string
 param keyVaultName string
 
-param sqlServerName string = 'teamsketch-sql'
-param sqlDbName string = 'teamsketch-db' 
-param sqlAdminUsername string = 'teamsa'
+param mysqlServerName string = 'teamsketch-mysql'
+param mysqlAdminUsername string = 'teamsketch'
 
 @secure()
-param sqlPassword string
+param mysqlPassword string
 
 module acr 'acr.bicep' = {
   name: 'acrModule'
@@ -43,14 +42,13 @@ module roleAssign 'roleassign.bicep' = {
   }
 }
 
-module sql 'sql.bicep' = {
-  name: 'sqlModule'
+module mysql 'mysql.bicep' = {
+  name: 'mysqlModule'
   params: {
     location: location
-    sqlServerName: sqlServerName
-    sqlDbName: sqlDbName
-    sqlAdminUsername: sqlAdminUsername
-    sqlAdminPassword: sqlPassword
+    serverName: mysqlServerName
+    adminUsername: mysqlAdminUsername
+    adminPassword: mysqlPassword
   }
 }
 
@@ -61,8 +59,10 @@ module sql 'sql.bicep' = {
     location: location
     kubeletIdentityObjectId: aksCsi.outputs.kubeletIdentityObjectId
     keyVaultName: keyVaultName
-    saPassword: sqlPassword
-    sqlConnection: 'Server=tcp:${sql.outputs.sqlServerFqdn},1433;Database=${sql.outputs.databaseName};User ID=${sqlAdminUsername};Password=${sqlPassword};Encrypt=true;TrustServerCertificate=false;Connection Timeout=30;'
+    saPassword: mysqlPassword
+    sqlConnection: 'Server=${mysql.outputs.fqdn};Port=3306;Database=${mysql.outputs.databaseName};User ID=${mysqlAdminUsername};Password=${mysqlPassword};SslMode=Required;'
   }
 }
  */
+
+output mysqlFqdn string = mysql.outputs.fqdn
