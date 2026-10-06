@@ -115,6 +115,7 @@ stages:
                 --set permissionservice.tag=$(tag) `
                 --set roomservice.tag=$(tag) `
                 --set userservice.tag=$(tag) `
+                --set-string roomservice.mysqlUrl="$(mysqlUrl)" `
                 --set secretProvider.tenantId=$(tenantId) `
                 --set secretProvider.userAssignedIdentityId=$(userAssignedIdentityID) `
                 --values conn-override.yaml `
@@ -126,6 +127,7 @@ stages:
           - script: |
               kubectl rollout status deployment/teamsketch-authservice -n teamsketch
               kubectl rollout status deployment/teamsketch-permissionservice -n teamsketch
-              kubectl rollout status deployment/teamsketch-roomservice -n teamsketch
+              kubectl rollout status deployment/teamsketch-roomservice-server -n teamsketch
+              kubectl rollout status deployment/teamsketch-roomservice-worker -n teamsketch
               kubectl rollout status deployment/teamsketch-userservice -n teamsketch
             displayName: 'Verify Deployment'

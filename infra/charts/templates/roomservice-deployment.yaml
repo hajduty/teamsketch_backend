@@ -1,3 +1,5 @@
+# RoomService is split in two: stateless WebSocket servers (scale with connections) and workers
+# that persist Redis streams to MySQL (scale with write volume). Both run from the same image.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -5,7 +7,7 @@ metadata:
   labels:
     app: {{ .Chart.Name }}-roomservice-server
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.roomservice.server.replicas }}
   selector:
     matchLabels:
       app: {{ .Chart.Name }}-roomservice-server
@@ -22,9 +24,28 @@ spec:
           - containerPort: {{ .Values.roomservice.containerPort }}
         env:
         {{- range $key, $value := .Values.env }}
+        {{- if ne $key "PORT" }}
         - name: {{ $key }}
           value: "{{ $value }}"
         {{- end }}
+        {{- end }}
+        - name: PORT
+          value: "{{ .Values.roomservice.containerPort }}"
+        - name: MYSQL
+          value: "{{ .Values.roomservice.mysqlUrl }}"
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.roomservice.containerPort }}
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.roomservice.containerPort }}
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        resources:
+          {{- toYaml .Values.roomservice.server.resources | nindent 10 }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -33,7 +54,7 @@ metadata:
   labels:
     app: {{ .Chart.Name }}-roomservice-worker
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.roomservice.worker.replicas }}
   selector:
     matchLabels:
       app: {{ .Chart.Name }}-roomservice-worker
@@ -51,3 +72,7 @@ spec:
         - name: {{ $key }}
           value: "{{ $value }}"
         {{- end }}
+        - name: MYSQL
+          value: "{{ .Values.roomservice.mysqlUrl }}"
+        resources:
+          {{- toYaml .Values.roomservice.worker.resources | nindent 10 }}
