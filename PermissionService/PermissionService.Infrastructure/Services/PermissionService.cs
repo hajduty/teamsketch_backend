@@ -135,12 +135,23 @@ namespace PermissionService.Infrastructure.Services
             if (newPerm.UserId == userPermission.UserId && userPermission.Role == "Owner")
                 throw new InvalidOperationException("Owner permission cannot be changed.");
 
+            // untracked, so the old role survives the update below
+            var targetPermission = await permRepo.GetUserPermissionAsync(newPerm.UserId, newPerm.Room, true);
+
+            if (targetPermission == null)
+                throw new KeyNotFoundException("User has no permission in this room.");
+
             var permission = await permRepo.UpdateUserPermissionAsync(newPerm);
 
             if (permission == null)
                 throw new InvalidOperationException("Failed to update permission.");
 
             _ = notifier.NotifyPermissionChanged(newPerm.UserId, newPerm.Room, newPerm.Role);
+
+            // RoomService decides write access when a socket connects, so open sockets keep the old
+            // role. Kicking makes the client reconnect and get checked again with the new role.
+            if (targetPermission.Role != newPerm.Role)
+                await redisPublisher.PublishKickRequestAsync(newPerm.UserId, newPerm.Room, "Role changed");
 
             return permission;
         }

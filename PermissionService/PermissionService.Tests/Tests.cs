@@ -152,6 +152,42 @@ namespace PermissionService.Tests
             await Assert.ThrowsAsync<InvalidOperationException>(() => _permService.AddUserPermission(perm, "currentUser"));
         }
 
+        [Theory]
+        [InlineData("editor", "viewer", true)]
+        [InlineData("viewer", "editor", true)]
+        [InlineData("editor", "editor", false)]
+        public async Task UpdateUserPermission_KicksUser_OnlyWhenRoleChanges(string oldRole, string newRole, bool shouldKick)
+        {
+            var newPerm = new Permission { UserId = "u2", Room = "room1", Role = newRole };
+
+            _permRepo.Setup(r => r.GetUserPermissionAsync("owner", "room1", false))
+                .ReturnsAsync(new Permission { UserId = "owner", Room = "room1", Role = "Owner" });
+
+            _permRepo.Setup(r => r.GetUserPermissionAsync("u2", "room1", true))
+                .ReturnsAsync(new Permission { UserId = "u2", Room = "room1", Role = oldRole });
+
+            _permRepo.Setup(r => r.UpdateUserPermissionAsync(newPerm)).ReturnsAsync(newPerm);
+
+            await _permService.UpdateUserPermission(newPerm, "owner");
+
+            _permPublisher.Verify(p => p.PublishKickRequestAsync("u2", "room1", It.IsAny<string>()), shouldKick ? Times.Once() : Times.Never());
+        }
+
+        [Fact]
+        public async Task UpdateUserPermission_ShouldFail_WhenTargetHasNoPermission()
+        {
+            _permRepo.Setup(r => r.GetUserPermissionAsync("owner", "room1", false))
+                .ReturnsAsync(new Permission { UserId = "owner", Room = "room1", Role = "Owner" });
+
+            _permRepo.Setup(r => r.GetUserPermissionAsync("u2", "room1", true))
+                .ReturnsAsync((Permission?)null);
+
+            await Assert.ThrowsAsync<KeyNotFoundException>(() =>
+                _permService.UpdateUserPermission(new Permission { UserId = "u2", Room = "room1", Role = "viewer" }, "owner"));
+
+            _permRepo.Verify(r => r.UpdateUserPermissionAsync(It.IsAny<Permission>()), Times.Never());
+        }
+
         /*
         [Theory]
         [InlineData("user-id", "room-id", "Owner", "user-email@gmail.com", "not-same-user-id", false, false)]
