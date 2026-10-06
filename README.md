@@ -19,19 +19,6 @@ Backend for **TeamSketch**, a real-time collaborative whiteboard. Users sign up,
 
 The contracts between services live in [`Shared/Contracts/Protos`](Shared/Contracts/Protos).
 
-### Real-time sync
-
-RoomService runs [y/hub](https://github.com/yjs/y-redis). Its design is why the sync can scale out:
-
-- Each room is a Redis stream, so the WebSocket servers keep no document state and any instance can serve any room.
-- Separate worker processes persist the streams to storage and trim them, so servers and workers scale independently.
-
-What TeamSketch adds on top:
-
-- **Auth.** y/hub's built-in permission callback is replaced with a gRPC `CheckPermission` call to PermissionService, using the JWT from the connection URL (`wss://…/{room}/{jwt}`).
-- **Kicking.** When access is removed, PermissionService publishes `user:kick` on Redis. Every RoomService instance closes that user's sockets.
-- **MySQL storage** for the documents, so they live in the same database as everything else.
-
 ## Running locally
 
 Requires Docker.
